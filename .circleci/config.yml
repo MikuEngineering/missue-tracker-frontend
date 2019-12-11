@@ -30,7 +30,7 @@ jobs:
       - checkout
       - run:
           name: deploy
-          command: ssh -oStrictHostKeyChecking=no -v $DEVELOP_USER@$DEVELOP_IP "cd /home/$DEVELOP_USER; ./deploy-frontend.sh $CIRCLE_BRANCH;"
+          command: ssh -oStrictHostKeyChecking=no -v $DEVELOP_USER@$DEVELOP_IP "cd /home/$DEVELOP_USER; sh deploy-frontend.sh $CIRCLE_BRANCH;"
 
 workflows:
   version: 2
