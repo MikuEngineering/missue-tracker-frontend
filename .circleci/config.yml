@@ -47,7 +47,7 @@ jobs:
           command: zip -r dist dist/*
       - run:
           name: Transfer dist.zip
-          command: scp ./dist.zip $DEVELOP_USER@$DEVELOP_IP:/home/$DEVELOP_USER/dist.zip
+          command: scp -o StrictHostKeyChecking=no ./dist.zip $DEVELOP_USER@$DEVELOP_IP:/home/$DEVELOP_USER/dist.zip
       - run:
           name: Unzip dist.zip
           command: ssh -oStrictHostKeyChecking=no -v $DEVELOP_USER@$DEVELOP_IP "cd /home/$DEVELOP_USER; unzip ./dist.zip; mv ./dist/ ./front-end/; rm ./dist.zip;"
