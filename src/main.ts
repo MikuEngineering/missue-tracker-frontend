@@ -1,3 +1,4 @@
+import '@/assets/styles/shared/reset.css'
 import Vue from 'vue'
 import App from './App.vue'
 import router from './router'
