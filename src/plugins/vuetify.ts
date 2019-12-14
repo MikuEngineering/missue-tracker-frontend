@@ -16,18 +16,18 @@ export default new Vuetify({
     },
     themes: {
       light: {
-        primary: '#72bcdb',
+        primary: '#70BCDB',
         secondary: '#424242',
-        accent: '#578ba1',
+        accent: '#578BA1',
         error: '#FF5252',
         info: '#2196F3',
         success: '#4CAF50',
         warning: '#FFC107'
       },
       dark: {
-        primary: '#72bcdb',
+        primary: '#70BCDB',
         secondary: '#424242',
-        accent: '#578ba1',
+        accent: '#578BA1',
         error: '#FF5252',
         info: '#2196F3',
         success: '#4CAF50',
