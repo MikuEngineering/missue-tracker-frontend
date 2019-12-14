@@ -2,10 +2,14 @@ import Vue from 'vue'
 import Vuetify from 'vuetify'
 import 'vuetify/dist/vuetify.min.css'
 import zhHant from 'vuetify/src/locale/zh-Hant'
+import '@mdi/js'
 
 Vue.use(Vuetify)
 
 export default new Vuetify({
+  icons: {
+    iconfont: 'mdiSvg'
+  },
   theme: {
     options: {
       customProperties: true
