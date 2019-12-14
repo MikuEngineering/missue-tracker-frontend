@@ -1,4 +1,4 @@
-import '@/assets/styles/shared/reset.css'
+import '@/styles/shared/reset.css'
 import 'reflect-metadata'
 import Vue from 'vue'
 import App from './App.vue'
