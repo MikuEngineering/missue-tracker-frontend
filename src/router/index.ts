@@ -1,12 +1,14 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
+import * as views from '@/views'
 
 Vue.use(VueRouter)
 
 const routes = [
   {
-    path: '/',
-    name: 'home'
+    name: 'auth',
+    path: '/auth',
+    component: views.AuthView
   }
 ]
 

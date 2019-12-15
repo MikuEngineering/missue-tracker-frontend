@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "core-js": "^3.3.2",
+    "reflect-metadata": "^0.1.13",
     "vue": "^2.6.10",
     "vue-class-component": "^7.1.0",
     "vue-property-decorator": "^8.3.0",
@@ -21,6 +22,7 @@
   },
   "devDependencies": {
     "@cypress/webpack-preprocessor": "^4.1.0",
+    "@mdi/js": "^4.7.95",
     "@types/jest": "^24.0.11",
     "@vue/cli-plugin-babel": "^4.0.0",
     "@vue/cli-plugin-e2e-cypress": "^4.0.0",

@@ -1,0 +1,70 @@
+$xs-max-width: 600px;
+$sm-max-width: 960px;
+$md-max-width: 1264px;
+$lg-max-width: 1904px;
+
+@mixin xlOnly() {
+  @media all and (min-width: $lg-max-width) {
+    @content;
+  }
+}
+
+@mixin lgAndUp() {
+  @media all and (min-width: $md-max-width) {
+    @content;
+  }
+}
+
+@mixin lgOnly() {
+  @media all and (min-width: $md-max-width) and (max-width: $lg-max-width - 1px) {
+    @content;
+  }
+}
+
+@mixin lgAndDown() {
+  @media all and (max-width: $lg-max-width - 1px) {
+    @content;
+  }
+}
+
+@mixin mdAndUp() {
+  @media all and (min-width: $sm-max-width) {
+    @content;
+  }
+}
+
+@mixin mdOnly() {
+  @media all and (min-width: $sm-max-width) and (max-width: $md-max-width - 1px) {
+    @content;
+  }
+}
+
+@mixin mdAndDown() {
+  @media all and (max-width: $md-max-width - 1px) {
+    @content;
+  }
+}
+
+@mixin smAndUp() {
+  @media all and (min-width: $xs-max-width) {
+    @content;
+  }
+}
+
+@mixin smOnly() {
+  @media all and (min-width: $xs-max-width) and (max-width: $sm-max-width - 1px) {
+    @content;
+  }
+}
+
+@mixin smAndDown() {
+  @media all and (max-width: $sm-max-width - 1px) {
+    @content;
+  }
+}
+
+@mixin xs() {
+  @media all and (max-width: $xs-max-width - 1px) {
+    @content;
+  }
+}
