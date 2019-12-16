@@ -92,15 +92,12 @@ export default class HomeView extends Vue {
   }
 
   goToCreateProjectPage () {
-    console.log('createProject')
   }
 
   goToProjectPage (projectName: string) {
-    console.log(`go to ${projectName} page`)
   }
 
   goToTagSearchPage (tag: string) {
-    console.log(`go to tag ${tag} search result page`)
   }
 }
 </script>
