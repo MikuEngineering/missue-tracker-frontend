@@ -2,13 +2,19 @@ import axios, { AxiosInstance } from 'axios'
 import * as dto from './dto/index'
 
 export default class Api {
+  private static instance: Api | null = null;
   public readonly httpClient: AxiosInstance
 
-  constructor () {
+  private constructor () {
     this.httpClient = axios.create({
       baseURL: 'https://miku.deviltea.io/api',
       withCredentials: true
     })
+  }
+
+  public static getInstance () {
+    if (Api.instance === null) Api.instance = new Api()
+    return Api.instance
   }
 
   public async getUserIdByUsername (username: string) {

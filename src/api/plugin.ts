@@ -1,10 +1,8 @@
 import Vue, { PluginFunction } from 'vue'
 import Api from './Api'
 
-const api = new Api()
-
 const install: PluginFunction<any> = (Vue) => {
-  Vue.prototype.$api = api
+  Vue.prototype.$api = Api.getInstance()
 }
 
 Vue.use(install)
