@@ -1,5 +1,36 @@
-import axios, { AxiosInstance } from 'axios'
+import axios, { AxiosInstance, AxiosError, AxiosResponse } from 'axios'
 import * as dto from './dto/index'
+import ErrorCode from '@/enums/ErrorCode'
+
+export interface BadRequestResponse {
+  errors:
+    {
+      type: string,
+      field: string,
+      code: string,
+      message: string
+    }[]
+}
+
+export interface OtherClientErrorResponse {
+  message: string
+}
+
+interface ErrorHandlers {
+  [key: number]: Function
+}
+
+export class ApiError extends Error {
+  public code: ErrorCode
+  public data: any
+
+  constructor (code: ErrorCode = ErrorCode.Unknown, data?: any) {
+    super(ErrorCode[code])
+    Object.setPrototypeOf(this, new.target.prototype)
+    this.code = code
+    this.data = data
+  }
+}
 
 export default class Api {
   private static instance: Api | null = null;
@@ -10,6 +41,11 @@ export default class Api {
       baseURL: 'https://miku.deviltea.io/api',
       withCredentials: true
     })
+
+    this.httpClient.interceptors.response.use(
+      (response) => response,
+      (error: AxiosError) => Promise.reject(error.response)
+    )
   }
 
   public static getInstance () {
@@ -19,40 +55,101 @@ export default class Api {
 
   public async getUserIdByUsername (username: string) {
     const response = await this.httpClient.get(`/users?username=${username}`)
+      .catch((response: AxiosResponse) => {
+        const { status, data } = response
+        const handlers: ErrorHandlers = {
+          400: () => new ApiError(ErrorCode.BadRequest, data),
+          404: () => new ApiError(ErrorCode.UserNotFound, data)
+        }
+        throw handlers[status]()
+      })
     const data: { id: number } = response.data
     return data.id
   }
 
   public async register (params: { username: string, password: string }) {
     await this.httpClient.post('/users', params)
+      .catch((response: AxiosResponse) => {
+        const { status, data } = response
+        const handlers: ErrorHandlers = {
+          400: () => new ApiError(ErrorCode.BadRequest, data),
+          409: () => new ApiError(ErrorCode.UserConflict, data)
+        }
+        throw handlers[status]()
+      })
   }
 
   public async validateSession () {
     await this.httpClient.get('/session')
+      .catch((response: AxiosResponse) => {
+        const { status, data } = response
+        const handlers: ErrorHandlers = {
+          404: () => new ApiError(ErrorCode.SessionNotFound, data)
+        }
+        throw handlers[status]()
+      })
   }
 
   public async login (params: { username: string, password: string }) {
     await this.httpClient.post('/session', params)
+      .catch((response: AxiosResponse) => {
+        const { status, data } = response
+        const handlers: ErrorHandlers = {
+          401: () => new ApiError(ErrorCode.UserUnauthorized, data),
+          403: () => new ApiError(ErrorCode.UserBanned, data)
+        }
+        throw handlers[status]()
+      })
   }
 
   public async logout () {
     await this.httpClient.delete('/session')
+      .catch((response: AxiosResponse) => {
+        const { status, data } = response
+        const handlers: ErrorHandlers = {
+          401: () => new ApiError(ErrorCode.UserUnauthorized, data)
+        }
+        throw handlers[status]()
+      })
   }
 
   public async getUser (userId: number) {
     const response = await this.httpClient.get(`/users/${userId}`)
+      .catch((response: AxiosResponse) => {
+        const { status, data } = response
+        const handlers: ErrorHandlers = {
+          404: () => new ApiError(ErrorCode.UserNotFound, data)
+        }
+        throw handlers[status]()
+      })
     const data: dto.GetUser = response.data
     return data
   }
 
   public async getUserProjectIds (userId: number) {
     const response = await this.httpClient.get(`/users/${userId}/projects`)
+      .catch((response: AxiosResponse) => {
+        const { status, data } = response
+        const handlers: ErrorHandlers = {
+          400: () => new ApiError(ErrorCode.BadRequest, data),
+          404: () => new ApiError(ErrorCode.UserNotFound, data)
+        }
+        throw handlers[status]()
+      })
     const data: dto.GetUserProjects = response.data
     return data.projects
   }
 
   public async getUserIssueIds (userId: number) {
     const response = await this.httpClient.get(`/users/${userId}/issues`)
+      .catch((response: AxiosResponse) => {
+        const { status, data } = response
+        const handlers: ErrorHandlers = {
+          400: () => new ApiError(ErrorCode.BadRequest, data),
+          404: () => new ApiError(ErrorCode.UserNotFound, data)
+        }
+        throw handlers[status]()
+      })
     const data: dto.GetUserIssues = response.data
     return data.issues
   }
@@ -63,14 +160,44 @@ export default class Api {
       nickname,
       autobiography
     })
+      .catch((response: AxiosResponse) => {
+        const { status, data } = response
+        const handlers: ErrorHandlers = {
+          400: () => new ApiError(ErrorCode.BadRequest, data),
+          401: () => new ApiError(ErrorCode.UserUnauthorized, data),
+          403: () => new ApiError(ErrorCode.UserPermissionDenied, data),
+          404: () => new ApiError(ErrorCode.UserNotFound, data)
+        }
+        throw handlers[status]()
+      })
   }
 
   public async banUser (userId: number) {
     await this.httpClient.post(`/users/${userId}/ban`)
+      .catch((response: AxiosResponse) => {
+        const { status, data } = response
+        const handlers: ErrorHandlers = {
+          400: () => new ApiError(ErrorCode.BadRequest, data),
+          401: () => new ApiError(ErrorCode.UserUnauthorized, data),
+          403: () => new ApiError(ErrorCode.UserPermissionDenied, data),
+          404: () => new ApiError(ErrorCode.UserNotFound, data)
+        }
+        throw handlers[status]()
+      })
   }
 
   public async unbanUser (userId: number) {
     await this.httpClient.delete(`/users/${userId}/ban`)
+      .catch((response: AxiosResponse) => {
+        const { status, data } = response
+        const handlers: ErrorHandlers = {
+          400: () => new ApiError(ErrorCode.BadRequest, data),
+          401: () => new ApiError(ErrorCode.UserUnauthorized, data),
+          403: () => new ApiError(ErrorCode.UserPermissionDenied, data),
+          404: () => new ApiError(ErrorCode.UserNotFound, data)
+        }
+        throw handlers[status]()
+      })
   }
 
   public async getProjectIdByOwnerNameAndProjectName (params: { ownerUserame: string, projectName: string }) {
