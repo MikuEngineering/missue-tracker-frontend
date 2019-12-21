@@ -20,6 +20,8 @@
               v-model="authCardViewModel"
               v-if="$vuetify.breakpoint.mdAndUp"
               class="mx-auto"
+              @click-login="onClickedLogin"
+              @click-register="onClickedRegister"
             ></AuthCard>
             <v-dialog v-else v-model="isAuthDialogVisible" max-width="400">
               <template v-slot:activator="{ on }">
@@ -47,6 +49,41 @@
 import Vue from 'vue'
 import AuthCard, { ViewModel as AuthCardViewModel } from '@/components/auth/AuthCard.vue'
 import { Component, Watch } from 'vue-property-decorator'
+import { namespace } from 'vuex-class'
+import { Route } from 'vue-router'
+import { ApiError, BadRequestResponse, OtherClientErrorResponse } from '../api/Api'
+import ErrorCode from '../enums/ErrorCode'
+
+const UserModule = namespace('user')
+const AlertModule = namespace('alert')
+
+function generateLoginViewModel () {
+  return {
+    username: '',
+    password: '',
+    keepLogin: false,
+    failures: [],
+    isDataTransferring: false,
+    isPasswordHidden: true,
+    startValidateUsername: false,
+    startValidatePassword: false
+  }
+}
+
+function generateRegisterViewModel () {
+  return {
+    username: '',
+    password: '',
+    passwordConfirm: '',
+    failures: [],
+    isDataTransferring: false,
+    isPasswordHidden: true,
+    isPasswordConfirmHidden: true,
+    startValidateUsername: false,
+    startValidatePassword: false,
+    startValidatePasswordConfirm: false
+  }
+}
 
 @Component({
   components: {
@@ -54,37 +91,121 @@ import { Component, Watch } from 'vue-property-decorator'
   }
 })
 export default class AuthView extends Vue {
+  @UserModule.State isLoggedIn!: boolean
+  @UserModule.State id!: number
+  @UserModule.Action validateSession!: Function
+  @UserModule.Action login!: Function
+  @UserModule.Action logout!: Function
+  @UserModule.Action afterLoggedIn!: Function
+  @UserModule.Action register!: Function
+  @AlertModule.Action addAlert!: Function
+
   readonly title: string = 'Missue Tracker';
   readonly introduction: string =
     'An issue tracker platform inspired by the way you work. From open source to business, you can host and manage projects, and discuss issues.';
   isAuthDialogVisible: boolean = false;
 
   authCardViewModel: AuthCardViewModel = {
-    loginViewModel: {
-      username: '',
-      password: '',
-      keepLogin: false,
-      error: {
-        fields: [],
-        messages: []
-      }
-    },
-    registerViewModel: {
-      username: '',
-      password: '',
-      passwordConfirm: '',
-      error: {
-        fields: [],
-        messages: []
+    currentTab: 'tab-login',
+    tabDisabled: false,
+    loginViewModel: generateLoginViewModel(),
+    registerViewModel: generateRegisterViewModel()
+  }
+
+  get registerViewModel () {
+    return this.authCardViewModel.registerViewModel
+  }
+
+  get loginViewModel () {
+    return this.authCardViewModel.loginViewModel
+  }
+
+  @Watch('$vuetify.breakpoint.mdAndUp')
+  onBreakpointMdAndUpTriggered (value: boolean, oldValue: boolean) {
+    if (value) {
+      this.isAuthDialogVisible = false
+    }
+  }
+
+  async onClickedLogin () {
+    try {
+      const { username, password, keepLogin: isKeepLogin } = this.loginViewModel
+      this.loginViewModel.isDataTransferring = true
+      await this.login({ username, password, isKeepLogin })
+      this.$router.push({ name: 'home' })
+      this.authCardViewModel.loginViewModel = generateLoginViewModel()
+    } catch (error) {
+      this.loginViewModel.isDataTransferring = false
+      if (!(error instanceof ApiError)) throw error
+      const apiError: ApiError = error
+
+      if (apiError.code === ErrorCode.BadRequest) {
+        const data: BadRequestResponse = apiError.data
+        this.loginViewModel.failures = data.errors.map(e => {
+          return {
+            field: e.field,
+            message: e.message
+          }
+        })
+      } else {
+        const data: OtherClientErrorResponse = apiError.data
+        const fields = ['username', 'password']
+        this.loginViewModel.failures = fields.map(field => ({
+          field,
+          message: data.message
+        }))
+        this.addAlert({ type: 'error', message: data.message })
       }
     }
   }
 
-  @Watch('$vuetify.breakpoint.mdAndUp')
-  onBreakpointMdAndUpTriggered (val: boolean, oldVal: boolean) {
-    if (val) {
-      this.isAuthDialogVisible = false
+  async onClickedRegister () {
+    try {
+      const { username, password } = this.registerViewModel
+      this.registerViewModel.isDataTransferring = true
+      await this.register({ username, password })
+      this.authCardViewModel.currentTab = 'tab-login'
+      this.authCardViewModel.registerViewModel = generateRegisterViewModel()
+    } catch (error) {
+      this.registerViewModel.isDataTransferring = false
+      if (!(error instanceof ApiError)) throw error
+      const apiError: ApiError = error
+
+      if (apiError.code === ErrorCode.BadRequest) {
+        const data: BadRequestResponse = apiError.data
+        this.registerViewModel.failures = data.errors.map(e => {
+          return {
+            field: e.field,
+            message: e.message
+          }
+        })
+      } else {
+        const data: OtherClientErrorResponse = apiError.data
+        const fields = ['username', 'password', 'passwordConfirm']
+        this.registerViewModel.failures = fields.map(field => ({
+          field,
+          message: data.message
+        }))
+        this.addAlert({ type: 'error', message: data.message })
+      }
     }
+  }
+
+  beforeRouteEnter (to: Route, from: Route, next: Function) {
+    next(async (vm: AuthView) => {
+      const username: string | null = localStorage.getItem('username')
+      await vm.validateSession()
+      if (vm.isLoggedIn) {
+        if (username === null) {
+          await vm.logout()
+          return
+        }
+        if (vm.id === null) {
+          await vm.afterLoggedIn(username)
+        }
+        vm.$router.push({ name: 'home' })
+      }
+    })
   }
 }
 </script>
@@ -99,7 +220,7 @@ $text-shadow: 0.1rem 0.1rem 0.2rem rgb(0, 0, 0, 0.5);
     90deg,
     #70bcdb 0%,
     #b8deec 50%,
-    #f3fbff 100%
+    #d3eefc 100%
   ) !important;
 }
 
