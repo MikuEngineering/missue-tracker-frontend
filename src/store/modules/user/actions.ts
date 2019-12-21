@@ -2,8 +2,7 @@ import { ActionTree } from 'vuex'
 import { UserState } from './types'
 import { RootState } from '../../types'
 import { SET_ID, SET_KEEP_LOGIN, SET_LOGGED_IN, SET_PROFILE } from './mutation-types'
-import ErrorCode from '@/enums/ErrorCode'
-import Api, { ApiError, BadRequestResponse, OtherClientErrorResponse } from '@/api/Api'
+import Api from '@/api/Api'
 
 const api = Api.getInstance()
 const actions: ActionTree<UserState, RootState> = {
@@ -13,7 +12,6 @@ const actions: ActionTree<UserState, RootState> = {
       commit(SET_LOGGED_IN, true)
     } catch (error) {
       commit(SET_LOGGED_IN, false)
-      throw error
     }
   },
 
@@ -25,11 +23,20 @@ const actions: ActionTree<UserState, RootState> = {
     const { username, password, isKeepLogin } = params
     try {
       await api.login({ username, password })
+      commit(SET_KEEP_LOGIN, isKeepLogin)
+      localStorage.setItem('username', username)
+    } catch (error) {
+      await dispatch('logout')
+      throw error
+    }
+    await dispatch('afterLoggedIn', username)
+  },
+
+  async afterLoggedIn ({ commit, dispatch }, username: string) {
+    try {
       const id = await api.getUserIdByUsername(username)
       const profile = await api.getUser(id)
-
       commit(SET_LOGGED_IN, true)
-      commit(SET_KEEP_LOGIN, isKeepLogin)
       commit(SET_ID, id)
       commit(SET_PROFILE, profile)
     } catch (error) {

@@ -8,7 +8,7 @@ const mutations: MutationTree<UserState> = {
   },
   [SET_KEEP_LOGIN] (state, value: boolean) {
     localStorage.setItem('keepLogin', JSON.stringify(value))
-    state.isLoggedIn = value
+    state.keepLogin = value
   },
   [SET_ID] (state, value: number | null) {
     state.id = value
