@@ -1,3 +1,4 @@
+import '@/utils/registerComponentRouterHooks'
 import '@/styles/shared/reset.css'
 import 'reflect-metadata'
 import Vue from 'vue'
