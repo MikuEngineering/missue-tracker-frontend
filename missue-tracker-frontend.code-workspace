@@ -27,26 +27,11 @@
     "vetur.format.defaultFormatter.js": "none",
     "vetur.format.defaultFormatter.ts": "none",
     "npm.packageManager": "npm",
-    "eslint.validate": [
-      {
-        "language": "javascript",
-        "autoFix": true
-      },
-      {
-        "language": "javascriptreact",
-        "autoFix": true
-      },
-      {
-        "language": "vue",
-        "autoFix": true
-      },
-      {
-        "language": "typescript",
-        "autoFix": true
-      }
-    ],
-    "eslint.autoFixOnSave": true,
+    "eslint.validate": ["javascript", "javascriptreact", "vue", "typescript"],
     "editor.formatOnSave": true,
-    "importCost.javascriptExtensions": ["\\.jsx?$", "\\.tsx?$", "\\.vue$"]
+    "importCost.javascriptExtensions": ["\\.jsx?$", "\\.tsx?$", "\\.vue$"],
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": true
+    }
   }
 }
