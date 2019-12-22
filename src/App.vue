@@ -1,17 +1,19 @@
 <template>
-  <v-app>
+  <DefaultLayout>
     <AlertGroup></AlertGroup>
     <router-view></router-view>
-  </v-app>
+  </DefaultLayout>
 </template>
 
 <script lang="ts">
 import Vue from 'vue'
 import { Component } from 'vue-property-decorator'
+import DefaultLayout from '@/layouts/DefaultLayout.vue'
 import AlertGroup from '@/components/shared/AlertGroup.vue'
 
 @Component({
   components: {
+    DefaultLayout,
     AlertGroup
   }
 })

@@ -1,52 +1,44 @@
 <template>
-  <v-app class="background__linear-gradient">
-    <v-container
-      class="auth-view__container d-flex align-center"
-      fluid
-      style="height: 100%;"
-    >
-      <v-content>
-        <v-row no-gutters align="center">
-          <v-col class="d-flex" cols="12" md="7">
-            <div class="missue-info mx-auto">
-              <p class="missue-info__title">{{ title }}</p>
-              <p class="missue-info__introduction">
-                {{ introduction }}
-              </p>
-            </div>
-          </v-col>
-          <v-col class="d-flex d-md-block justify-center" cols="12" md="5">
+  <v-container
+    class="auth-view__container background__linear-gradient d-flex align-center"
+    fluid
+    style="height: 100%;"
+  >
+    <v-content>
+      <v-row no-gutters align="center">
+        <v-col class="d-flex" cols="12" md="7">
+          <div class="missue-info mx-auto">
+            <p class="missue-info__title">{{ title }}</p>
+            <p class="missue-info__introduction">
+              {{ introduction }}
+            </p>
+          </div>
+        </v-col>
+        <v-col class="d-flex d-md-block justify-center" cols="12" md="5">
+          <AuthCard
+            v-model="authCardViewModel"
+            v-if="$vuetify.breakpoint.mdAndUp"
+            class="mx-auto"
+            @click-login="onClickedLogin"
+            @click-register="onClickedRegister"
+          ></AuthCard>
+          <v-dialog v-else v-model="isAuthDialogVisible" max-width="400">
+            <template v-slot:activator="{ on }">
+              <v-btn color="secondary" dark v-on="on">
+                Login / Register
+              </v-btn>
+            </template>
+
             <AuthCard
               v-model="authCardViewModel"
-              v-if="$vuetify.breakpoint.mdAndUp"
-              class="mx-auto"
               @click-login="onClickedLogin"
               @click-register="onClickedRegister"
             ></AuthCard>
-            <v-dialog v-else v-model="isAuthDialogVisible" max-width="400">
-              <template v-slot:activator="{ on }">
-                <v-btn color="secondary" dark v-on="on">
-                  Login / Register
-                </v-btn>
-              </template>
-
-              <AuthCard
-                v-model="authCardViewModel"
-                @click-login="onClickedLogin"
-                @click-register="onClickedRegister"
-              ></AuthCard>
-            </v-dialog>
-          </v-col>
-        </v-row>
-      </v-content>
-    </v-container>
-
-    <v-footer color="transparent">
-      <v-spacer></v-spacer>
-      <span class="grey--text lighten-3">Miku Engineering © 2019</span>
-      <v-spacer></v-spacer>
-    </v-footer>
-  </v-app>
+          </v-dialog>
+        </v-col>
+      </v-row>
+    </v-content>
+  </v-container>
 </template>
 
 <script lang="ts">
