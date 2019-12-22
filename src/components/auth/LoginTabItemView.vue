@@ -17,7 +17,7 @@
         @input="onInputUsername"
         @blur="value.startValidateUsername = true"
         :disabled="value.isDataTransferring"
-        @keypress:enter="isUnableToLogin || clickLogin"
+        @keypress.enter="isUnableToLogin || clickLogin()"
       ></v-text-field>
       <v-text-field
         v-model="value.password"
@@ -35,7 +35,7 @@
         @input="onInputPassword"
         @blur="value.startValidatePassword = true"
         :disabled="value.isDataTransferring"
-        @keypress:enter="isUnableToLogin || clickLogin"
+        @keypress.enter="isUnableToLogin || clickLogin()"
       ></v-text-field>
       <v-checkbox
         v-model="value.keepLogin"

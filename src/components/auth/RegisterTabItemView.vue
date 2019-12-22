@@ -17,7 +17,7 @@
         @input="onInputUsername"
         @blur="value.startValidateUsername = true"
         :disabled="value.isDataTransferring"
-        @keypress:enter="isUnableToRegister || clickRegister"
+        @keypress.enter="isUnableToRegister || clickRegister()"
       ></v-text-field>
       <v-text-field
         v-model="value.password"
@@ -35,7 +35,7 @@
         @input="onInputPassword"
         @blur="value.startValidatePassword = true"
         :disabled="value.isDataTransferring"
-        @keypress:enter="isUnableToRegister || clickRegister"
+        @keypress.enter="isUnableToRegister || clickRegister()"
       ></v-text-field>
       <v-text-field
         v-model="value.passwordConfirm"
@@ -55,7 +55,7 @@
         @input="onInputPasswordConfirm"
         @blur="value.startValidatePasswordConfirm = true"
         :disabled="value.isDataTransferring"
-        @keypress:enter="isUnableToRegister || clickRegister"
+        @keypress.enter="isUnableToRegister || clickRegister()"
       ></v-text-field>
       <ul class="error-message-list error--text pb-3 pl-1">
         <li
