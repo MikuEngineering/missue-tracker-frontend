@@ -29,7 +29,7 @@
 
     <!-- Avatar -->
     <v-toolbar-items v-else>
-      <v-menu offset-y nudge-bottom="12">
+      <v-menu offset-y>
         <template v-slot:activator="{ on }">
           <v-btn color="transparent" v-on="on" elevation="0" x-small>
             <v-avatar size="36" color="primary" class="white--text">{{
@@ -38,14 +38,17 @@
             <v-icon color="primary">mdi-menu-down</v-icon>
           </v-btn>
         </template>
-        <v-list min-width="200" elevation="0">
+        <v-list min-width="200" elevation="0" dense>
           <v-list-item>
-            <v-list-item-title class="text-center"
-              >Signed in as
+            <v-list-item-title class="text-center">
+              Signed in as
               <span class="title">{{ nickname }}</span>
             </v-list-item-title>
           </v-list-item>
           <v-divider></v-divider>
+          <v-list-item @click="logout">
+            <v-list-item-title>Logout</v-list-item-title>
+          </v-list-item>
         </v-list>
       </v-menu>
     </v-toolbar-items>
@@ -85,6 +88,11 @@ export default class Navbar extends Vue {
 
   goToHomePage () {
     this.$router.push({ name: 'home' })
+  }
+
+  async logout () {
+    await UserModule.logout()
+    this.goToHomePage()
   }
 }
 </script>
