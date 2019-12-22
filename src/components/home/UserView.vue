@@ -1,11 +1,10 @@
 <template>
-  <v-progress-linear
-    v-if="isLoadingProjectIds"
-    indeterminate
-  ></v-progress-linear>
-  <div v-else style="height: 100%;">
-    <ProjectEmptyView v-if="isEmpty"></ProjectEmptyView>
-    <ProjectListView v-else :projectIds="projectIds"></ProjectListView>
+  <div style="height: 100%;">
+    <ProjectEmptyView v-if="isEmpty && !isLoadingProjectIds"></ProjectEmptyView>
+    <ProjectListView
+      v-else-if="!isEmpty"
+      :projectIds="projectIds"
+    ></ProjectListView>
   </div>
 </template>
 
@@ -13,17 +12,15 @@
 import Vue from 'vue'
 import { Component } from 'vue-property-decorator'
 import { GetProject as Project } from '@/api/dto'
+import AppModule from '@/store/modules/app'
 import ProjectEmptyView from './ProjectEmptyView.vue'
 import ProjectListView from './ProjectListView.vue'
-
-function delay (ms: number) {
-  return new Promise(resolve => setTimeout(resolve, ms))
-}
+import { delay } from '@/utils/util'
 
 async function mockGetProjectIds () {
   await delay(300)
-  // return [1, 2, 3, 4, 5, 6, 7]
-  return []
+  return [1, 2, 3, 4, 5, 6, 7]
+  // return []
 }
 
 @Component({
@@ -45,9 +42,11 @@ export default class HomeView extends Vue {
   }
 
   async updateProjectIds () {
+    AppModule.setIsPageLoading(true)
     this.isLoadingProjectIds = true
     this.projectIds = await mockGetProjectIds()
     this.isLoadingProjectIds = false
+    AppModule.setIsPageLoading(false)
   }
 
   created () {
