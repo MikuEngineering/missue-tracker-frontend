@@ -1,6 +1,6 @@
 <template>
   <v-app>
-    <v-app-bar app></v-app-bar>
+    <Navbar></Navbar>
     <v-container fluid class="d-flex pa-0" style="height: 100%;">
       <v-content>
         <slot></slot>
@@ -17,8 +17,13 @@
 <script lang="ts">
 import Vue from 'vue'
 import { Component } from 'vue-property-decorator'
+import Navbar from '@/components/shared/Navbar.vue'
 
-@Component
+@Component({
+  components: {
+    Navbar
+  }
+})
 export default class DefaultLayout extends Vue {
 
 }
