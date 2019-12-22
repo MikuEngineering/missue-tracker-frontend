@@ -82,6 +82,7 @@ class UserModule extends VuexModule {
   @Action({ rawError: true })
   async logout () {
     try { await api.logout } catch {}
+    localStorage.removeItem('username')
     this.context.commit(SET_LOGGED_IN, false)
     this.context.commit(SET_KEEP_LOGIN, false)
     this.context.commit(SET_ID, null)

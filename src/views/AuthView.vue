@@ -30,7 +30,11 @@
                 </v-btn>
               </template>
 
-              <AuthCard v-model="authCardViewModel"></AuthCard>
+              <AuthCard
+                v-model="authCardViewModel"
+                @click-login="onClickedLogin"
+                @click-register="onClickedRegister"
+              ></AuthCard>
             </v-dialog>
           </v-col>
         </v-row>

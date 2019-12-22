@@ -47,13 +47,13 @@ import { Component, Prop, Emit } from 'vue-property-decorator'
 @Component
 export default class ProjectInfoCardContent extends Vue {
   @Prop() name!: string
-  @Prop() createdDate!: Date
+  @Prop() createdDate!: string
   @Prop() description!: string
   @Prop() privacy!: number
   @Prop() tags!: string[]
 
   get createdDateString () {
-    let splited = this.createdDate.toDateString().split(' ')
+    let splited = new Date(this.createdDate).toDateString().split(' ')
     splited.shift()
     return `${splited[1]} ${splited[0]}, ${splited[2]}`
   }
