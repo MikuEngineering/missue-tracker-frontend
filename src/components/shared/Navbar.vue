@@ -83,11 +83,11 @@ export default class Navbar extends Vue {
   }
 
   goToAuthPage () {
-    this.$router.push({ name: 'auth' }).catch(() => {})
+    this.$router.push({ name: 'auth' })
   }
 
   goToHomePage () {
-    this.$router.push({ name: 'home' }).catch(() => {})
+    this.$router.push({ name: 'home' })
   }
 
   async logout () {

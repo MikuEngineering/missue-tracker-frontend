@@ -1,6 +1,6 @@
 <template>
   <v-container
-    class="view-container background__linear-gradient d-flex justify-center align-center"
+    class="fill-height view-container background__linear-gradient d-flex justify-center align-center"
     fluid
   >
     <div>Why<br />don't<br />you<br />just<br />join<br />us<br />?</div>
@@ -19,6 +19,7 @@ export default class GuestView extends Vue {
 
 <style lang="scss" scoped>
 @import "@/styles/shared/mixins/breakpoints.scss";
+@import "@/styles/shared/util";
 $text-shadow: 0.1rem 0.1rem 0.2rem rgb(0, 0, 0, 0.5);
 
 .background__linear-gradient {
@@ -32,7 +33,6 @@ $text-shadow: 0.1rem 0.1rem 0.2rem rgb(0, 0, 0, 0.5);
 }
 
 .view-container {
-  height: 100%;
   text-align: center;
   font-size: 30vw;
   color: white;
