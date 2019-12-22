@@ -16,15 +16,19 @@
 <script lang="ts">
 import Vue from 'vue'
 import { Component } from 'vue-property-decorator'
-import { State, Action, namespace } from 'vuex-class'
-import { Alert } from '@/store/modules/alert/types'
-
-const alertModule = namespace('alert')
+import { getModule } from 'vuex-module-decorators'
+import AlertModule from '@/store/modules/alert'
+import { Alert } from '../../store/modules/alert'
 
 @Component
 export default class AlertGroup extends Vue {
-  @alertModule.State('alerts') alerts!: Alert[]
-  @alertModule.Action('removeAlert') removeAlert!: Function
+  get alerts () {
+    return AlertModule.alerts
+  }
+
+  removeAlert (alert: Alert) {
+    AlertModule.removeAlert(alert)
+  }
 }
 </script>
 
