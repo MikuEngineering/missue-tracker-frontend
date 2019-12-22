@@ -31,7 +31,7 @@
     <v-container v-else fluid class="view-container pa-0">
       <div class="background__header primary">Miku</div>
       <v-container class="py-0">
-        <v-row class="project-list mx-auto" justify="space-between">
+        <v-row class="project-list mx-auto">
           <v-col class="project-list__header" cols="12">
             <div class="header__title">All Projects</div>
             <div class="header__amount">101 projects</div>
@@ -42,7 +42,7 @@
             </ProjectCard>
           </v-col>
           <v-col
-            v-for="index in 5"
+            v-for="(project, index) in viewModel.projects"
             :key="`project-card-${index}`"
             cols="12"
             sm="6"
@@ -50,7 +50,7 @@
           >
             <ProjectCard>
               <ProjectInfoCardContent
-                v-bind="mockProjectInfo"
+                v-bind="project"
                 @click-project="goToProjectPage"
                 @click-tag="goToTagSearchPage"
               ></ProjectInfoCardContent>
@@ -69,6 +69,35 @@ import DefaultLayout from '@/layouts/DefaultLayout.vue'
 import ProjectCard from '@/components/home/ProjectCard.vue'
 import AddProjectCardContent from '@/components/home/AddProjectCardContent.vue'
 import ProjectInfoCardContent from '@/components/home/ProjectInfoCardContent.vue'
+import UserModule from '@/store/modules/user'
+import { GetProject as Project } from '@/api/dto'
+
+function delay (ms: number) {
+  return new Promise(resolve => setTimeout(resolve, ms))
+}
+
+async function mockGetProjectIds () {
+  await delay(100)
+  return [1, 2, 3, 4, 5, 6, 7]
+}
+
+async function mockGetProjectInfo (projectId: number) {
+  await delay(200)
+  return {
+    name: `project-${projectId}`,
+    createdDate: new Date().toJSON(),
+    description: `A missue-tracker project-${projectId}.`,
+    privacy: Math.floor(Math.random() * 2),
+    tags: ['typescript', 'vue', 'scss']
+  }
+}
+
+export interface ViewModel {
+  isLoadingProjectIds: boolean,
+  isLoadingProjects: boolean,
+  projectIds: number[],
+  projects: Project[]
+}
 
 @Component({
   components: {
@@ -79,16 +108,19 @@ import ProjectInfoCardContent from '@/components/home/ProjectInfoCardContent.vue
   }
 })
 export default class HomeView extends Vue {
-  readonly mockProjectInfo = {
-    name: 'missue-trackermissue-trackermissue-tracker',
-    createdDate: new Date(),
-    description: 'A missue-tracker app A missue-tracker appA missue-tracker appA missue-tracker appA missue-tracker appA missue-tracker appA missue-tracker appA missue-tracker appA missue-tracker appA missue-tracker appA missue-tracker app',
-    privacy: 1,
-    tags: ['typescript', 'typescript', 'typescript', 'typescript', 'typescript', 'vue', 'scss']
+  viewModel: ViewModel = {
+    isLoadingProjectIds: true,
+    isLoadingProjects: true,
+    projectIds: [],
+    projects: []
+  }
+
+  get isGuest () {
+    return !UserModule.isLoggedIn
   }
 
   get numOfProjects () {
-    return 1
+    return this.viewModel.projectIds
   }
 
   goToCreateProjectPage () {
@@ -98,6 +130,16 @@ export default class HomeView extends Vue {
   }
 
   goToTagSearchPage (tag: string) {
+  }
+
+  async mounted () {
+    if (this.isGuest) return
+    this.viewModel.projectIds = await mockGetProjectIds()
+    this.viewModel.isLoadingProjectIds = false
+    const promises = this.viewModel.projectIds.map(projectId => mockGetProjectInfo(projectId))
+    console.log(promises)
+    this.viewModel.projects = await Promise.all(promises)
+    this.viewModel.isLoadingProjects = false
   }
 }
 </script>
