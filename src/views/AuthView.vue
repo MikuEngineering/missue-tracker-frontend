@@ -49,13 +49,9 @@
 import Vue from 'vue'
 import AuthCard, { ViewModel as AuthCardViewModel } from '@/components/auth/AuthCard.vue'
 import { Component, Watch } from 'vue-property-decorator'
-import { namespace } from 'vuex-class'
-import { Route } from 'vue-router'
+import { alert as AlertModule, user as UserModule } from '@/store/modules'
 import { ApiError, BadRequestResponse, OtherClientErrorResponse } from '../api/Api'
 import ErrorCode from '../enums/ErrorCode'
-
-const UserModule = namespace('user')
-const AlertModule = namespace('alert')
 
 function generateLoginViewModel () {
   return {
@@ -91,15 +87,6 @@ function generateRegisterViewModel () {
   }
 })
 export default class AuthView extends Vue {
-  @UserModule.State isLoggedIn!: boolean
-  @UserModule.State id!: number
-  @UserModule.Action validateSession!: Function
-  @UserModule.Action login!: Function
-  @UserModule.Action logout!: Function
-  @UserModule.Action afterLoggedIn!: Function
-  @UserModule.Action register!: Function
-  @AlertModule.Action addAlert!: Function
-
   readonly title: string = 'Missue Tracker';
   readonly introduction: string =
     'An issue tracker platform inspired by the way you work. From open source to business, you can host and manage projects, and discuss issues.';
@@ -131,7 +118,7 @@ export default class AuthView extends Vue {
     try {
       const { username, password, keepLogin: isKeepLogin } = this.loginViewModel
       this.loginViewModel.isDataTransferring = true
-      await this.login({ username, password, isKeepLogin })
+      await UserModule.login({ username, password, isKeepLogin })
       this.$router.push({ name: 'home' })
       this.authCardViewModel.loginViewModel = generateLoginViewModel()
     } catch (error) {
@@ -154,7 +141,7 @@ export default class AuthView extends Vue {
           field,
           message: data.message
         }))
-        this.addAlert({ type: 'error', message: data.message })
+        AlertModule.addAlert({ type: 'error', message: data.message })
       }
     }
   }
@@ -163,7 +150,7 @@ export default class AuthView extends Vue {
     try {
       const { username, password } = this.registerViewModel
       this.registerViewModel.isDataTransferring = true
-      await this.register({ username, password })
+      await UserModule.register({ username, password })
       this.authCardViewModel.currentTab = 'tab-login'
       this.authCardViewModel.registerViewModel = generateRegisterViewModel()
     } catch (error) {
@@ -186,26 +173,9 @@ export default class AuthView extends Vue {
           field,
           message: data.message
         }))
-        this.addAlert({ type: 'error', message: data.message })
+        AlertModule.addAlert({ type: 'error', message: data.message })
       }
     }
-  }
-
-  beforeRouteEnter (to: Route, from: Route, next: Function) {
-    next(async (vm: AuthView) => {
-      const username: string | null = localStorage.getItem('username')
-      await vm.validateSession()
-      if (vm.isLoggedIn) {
-        if (username === null) {
-          await vm.logout()
-          return
-        }
-        if (vm.id === null) {
-          await vm.afterLoggedIn(username)
-        }
-        vm.$router.push({ name: 'home' })
-      }
-    })
   }
 }
 </script>
