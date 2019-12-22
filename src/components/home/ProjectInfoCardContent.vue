@@ -1,5 +1,5 @@
 <template>
-  <div class="project-content pa-5 d-flex flex-column">
+  <div class="fill-parent project-content pa-5 d-flex flex-column">
     <div class="project-click-aria pb-3" @click="clickProject">
       <div class="project-content__title">
         <span style="vertical-align: middle;">{{ name }}</span>
@@ -69,6 +69,7 @@ export default class ProjectInfoCardContent extends Vue {
 </script>
 
 <style lang="scss" scoped>
+@import "@/styles/shared/util";
 @mixin no-scrollbar {
   &::-webkit-scrollbar {
     display: none;
@@ -80,9 +81,6 @@ export default class ProjectInfoCardContent extends Vue {
 }
 
 .project-content {
-  width: 100%;
-  height: 100%;
-
   .project-click-aria {
     cursor: pointer;
 

@@ -1,5 +1,5 @@
 <template>
-  <div style="height: 100%;">
+  <div class="fill-height">
     <ProjectEmptyView v-if="isEmpty && !isLoadingProjectIds"></ProjectEmptyView>
     <ProjectListView
       v-else-if="!isEmpty"
@@ -55,5 +55,6 @@ export default class HomeView extends Vue {
 }
 </script>
 
-<style>
+<style lang="scss" scoped>
+@import "@/styles/shared/util";
 </style>

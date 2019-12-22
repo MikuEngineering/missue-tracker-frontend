@@ -1,8 +1,8 @@
 <template>
   <v-app>
     <Navbar></Navbar>
-    <v-container fluid class="d-flex pa-0" style="height: 100%;">
-      <v-content>
+    <v-container fluid class="fill-height pa-0">
+      <v-content class="fill-height">
         <slot></slot>
       </v-content>
     </v-container>
@@ -25,9 +25,9 @@ import Navbar from '@/components/shared/Navbar.vue'
   }
 })
 export default class DefaultLayout extends Vue {
-
 }
 </script>
 
 <style lang="scss" scoped>
+@import "@/styles/shared/util";
 </style>

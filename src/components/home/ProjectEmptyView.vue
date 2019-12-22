@@ -1,7 +1,7 @@
 <template>
   <v-container
     fluid
-    class="view-container--empty d-flex justify-center align-center background__linear-gradient pa-0"
+    class="fill-height view-container--empty d-flex justify-center align-center background__linear-gradient pa-0"
   >
     <div class="background__welcome d-flex">
       <div class="welcome d-flex flex-column justify-center align-start">
@@ -41,6 +41,7 @@ export default class ProjectEmptyView extends Vue {
 
 <style lang="scss" scoped>
 @import "@/styles/shared/mixins/breakpoints.scss";
+@import "@/styles/shared/util";
 $text-shadow: 0.1rem 0.1rem 0.2rem rgb(0, 0, 0, 0.5);
 
 .background__linear-gradient {
@@ -54,8 +55,6 @@ $text-shadow: 0.1rem 0.1rem 0.2rem rgb(0, 0, 0, 0.5);
 }
 
 .view-container--empty {
-  height: 100%;
-
   .background__welcome {
     position: relative;
 
