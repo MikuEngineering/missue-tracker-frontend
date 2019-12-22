@@ -1,9 +1,5 @@
 <template>
   <v-container fluid class="view-container pa-0">
-    <v-progress-linear
-      v-if="isLoadingProjects"
-      indeterminate
-    ></v-progress-linear>
     <div class="background__header primary">Miku</div>
     <v-container class="py-0">
       <v-row class="project-list mx-auto">
@@ -51,12 +47,10 @@ import { Component, Prop } from 'vue-property-decorator'
 import ProjectCard from '@/components/home/ProjectCard.vue'
 import AddProjectCardContent from '@/components/home/AddProjectCardContent.vue'
 import ProjectInfoCardContent from '@/components/home/ProjectInfoCardContent.vue'
+import AppModule from '@/store/modules/app'
 import UserModule from '@/store/modules/user'
 import { GetProject as Project } from '@/api/dto'
-
-function delay (ms: number) {
-  return new Promise(resolve => setTimeout(resolve, ms))
-}
+import { delay } from '@/utils/util'
 
 async function mockGetProjectInfo (projectId: number) {
   await delay(Math.floor(Math.random() * 1000 + 2000))
@@ -100,9 +94,11 @@ export default class ProjectListView extends Vue {
   }
 
   async updateProjects () {
+    AppModule.setIsPageLoading(true)
     this.isLoadingProjects = true
     this._projects = await Promise.all(this.projectIds.map(projectId => mockGetProjectInfo(projectId)))
     this.isLoadingProjects = false
+    AppModule.setIsPageLoading(false)
   }
 
   created () {

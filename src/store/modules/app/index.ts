@@ -1,6 +1,6 @@
 import store from '@/store'
 import { Module, VuexModule, Mutation, Action, getModule } from 'vuex-module-decorators'
-import { ADD_ALERT, REMOVE_ALERT } from './mutationTypes'
+import { ADD_ALERT, REMOVE_ALERT, SET_IS_PAGE_LOADING } from './mutationTypes'
 
 export interface Alert {
   type: string,
@@ -10,7 +10,13 @@ export interface Alert {
 
 @Module({ dynamic: true, store, name: 'app' })
 class AppModule extends VuexModule {
+  isPageLoading: boolean = false
   alerts: Alert[] = []
+
+  @Mutation
+  [SET_IS_PAGE_LOADING] (isPageLoading: boolean) {
+    this.isPageLoading = isPageLoading
+  }
 
   @Mutation
   [ADD_ALERT] (alert: Alert) {
@@ -21,6 +27,11 @@ class AppModule extends VuexModule {
   [REMOVE_ALERT] (alert: Alert) {
     const toRemoveIndex = this.alerts.indexOf(alert)
     this.alerts.splice(toRemoveIndex, 1)
+  }
+
+  @Action
+  setIsPageLoading (isPageLoading: boolean) {
+    this.context.commit(SET_IS_PAGE_LOADING, isPageLoading)
   }
 
   @Action
