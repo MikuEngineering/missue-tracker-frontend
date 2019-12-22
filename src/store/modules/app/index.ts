@@ -8,8 +8,8 @@ export interface Alert {
   timeoutId: number
 }
 
-@Module({ dynamic: true, store, name: 'alert' })
-class AlertModule extends VuexModule {
+@Module({ dynamic: true, store, name: 'app' })
+class AppModule extends VuexModule {
   alerts: Alert[] = []
 
   @Mutation
@@ -42,4 +42,4 @@ class AlertModule extends VuexModule {
   }
 }
 
-export default getModule(AlertModule)
+export default getModule(AppModule)
