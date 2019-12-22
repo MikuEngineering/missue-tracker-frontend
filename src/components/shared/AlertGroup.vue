@@ -17,17 +17,16 @@
 import Vue from 'vue'
 import { Component } from 'vue-property-decorator'
 import { getModule } from 'vuex-module-decorators'
-import AlertModule from '@/store/modules/alert'
-import { Alert } from '../../store/modules/alert'
+import AppModule, { Alert } from '@/store/modules/app'
 
 @Component
 export default class AlertGroup extends Vue {
   get alerts () {
-    return AlertModule.alerts
+    return AppModule.alerts
   }
 
   removeAlert (alert: Alert) {
-    AlertModule.removeAlert(alert)
+    AppModule.removeAlert(alert)
   }
 }
 </script>

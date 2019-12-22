@@ -45,7 +45,7 @@
 import Vue from 'vue'
 import AuthCard, { ViewModel as AuthCardViewModel } from '@/components/auth/AuthCard.vue'
 import { Component, Watch } from 'vue-property-decorator'
-import { alert as AlertModule, user as UserModule } from '@/store/modules'
+import { app as AppModule, user as UserModule } from '@/store/modules'
 import { ApiError, BadRequestResponse, OtherClientErrorResponse } from '../api/Api'
 import ErrorCode from '../enums/ErrorCode'
 
@@ -137,7 +137,7 @@ export default class AuthView extends Vue {
           field,
           message: data.message
         }))
-        AlertModule.addAlert({ type: 'error', message: data.message })
+        AppModule.addAlert({ type: 'error', message: data.message })
       }
     }
   }
@@ -169,7 +169,7 @@ export default class AuthView extends Vue {
           field,
           message: data.message
         }))
-        AlertModule.addAlert({ type: 'error', message: data.message })
+        AppModule.addAlert({ type: 'error', message: data.message })
       }
     }
   }
