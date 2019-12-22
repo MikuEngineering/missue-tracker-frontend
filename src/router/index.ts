@@ -9,17 +9,22 @@ Vue.use(VueRouter)
 
 const routes: RouteConfig[] = [
   {
-    name: 'home',
-    path: '/',
-    component: views.HomeView
-  },
-  {
     name: 'auth',
     path: '/auth',
     meta: {
       unauthorizedRequired: true
     },
     component: views.AuthView
+  },
+  {
+    name: 'home',
+    path: '/',
+    component: views.HomeView
+  },
+  {
+    name: 'home',
+    path: '/:username',
+    component: views.ProfileView
   }
 ]
 
