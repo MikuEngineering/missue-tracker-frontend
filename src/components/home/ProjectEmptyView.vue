@@ -12,7 +12,7 @@
             class="mt-6"
             large
             color="primary--text"
-            @click="goToCreateProjectPage"
+            @click="openCreateProjectDialog"
           >
             Create Now
           </v-btn>
@@ -30,12 +30,12 @@
 
 <script lang="ts">
 import Vue from 'vue'
-import { Component } from 'vue-property-decorator'
+import { Component, Emit } from 'vue-property-decorator'
 
 @Component
 export default class ProjectEmptyView extends Vue {
-  goToCreateProjectPage () {
-  }
+  @Emit()
+  openCreateProjectDialog () {}
 }
 </script>
 

@@ -43,7 +43,7 @@
 
 <script lang="ts">
 import Vue from 'vue'
-import { Component, Prop } from 'vue-property-decorator'
+import { Component, Prop, Emit } from 'vue-property-decorator'
 import ProjectCard from '@/components/home/ProjectCard.vue'
 import AddProjectCardContent from '@/components/home/AddProjectCardContent.vue'
 import ProjectInfoCardContent from '@/components/home/ProjectInfoCardContent.vue'
@@ -89,6 +89,9 @@ export default class ProjectListView extends Vue {
     this.isLoadingProjects = false
     AppModule.setIsPageLoading(false)
   }
+
+  @Emit()
+  createProject () {}
 
   created () {
     this.updateProjects()
