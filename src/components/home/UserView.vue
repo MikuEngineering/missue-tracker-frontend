@@ -1,6 +1,12 @@
 <template>
   <div class="fill-height">
-    <ProjectEmptyView v-if="isEmpty && !isLoadingProjectIds"></ProjectEmptyView>
+    <CreateProjectDialog v-model="showingCreateProjectDialog">
+      <v-card></v-card>
+    </CreateProjectDialog>
+    <ProjectEmptyView
+      v-if="isEmpty && !isLoadingProjectIds"
+      @open-create-project-dialog="showingCreateProjectDialog = true"
+    ></ProjectEmptyView>
     <ProjectListView
       v-else-if="!isEmpty"
       :projectIds="projectIds"
@@ -15,15 +21,18 @@ import { GetProject as Project } from '@/api/dto'
 import AppModule from '@/store/modules/app'
 import ProjectEmptyView from './ProjectEmptyView.vue'
 import ProjectListView from './ProjectListView.vue'
+import CreateProjectDialog from './CreateProjectDialog.vue'
 import { mockGetProjectIds } from '@/utils/util'
 
 @Component({
   components: {
     ProjectEmptyView,
-    ProjectListView
+    ProjectListView,
+    CreateProjectDialog
   }
 })
 export default class HomeView extends Vue {
+  showingCreateProjectDialog = false
   isLoadingProjectIds = true
   projectIds: number[] = []
 
