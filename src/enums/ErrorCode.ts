@@ -7,6 +7,7 @@ enum ErrorCode {
   UserBanned,
   UserPermissionDenied,
   UserUnauthorized,
+  UserOrProjectNotFound,
   ProjectNotFound,
   ProjectConflict,
   LabelNotFound,

@@ -205,12 +205,27 @@ export default class Api {
   public async getProjectIdByOwnerNameAndProjectName (params: { ownerUserame: string, projectName: string }) {
     const { ownerUserame, projectName } = params
     const response = await this.httpClient.get(`/projects?owner_username=${ownerUserame}&project_name=${projectName}`)
+      .catch((response: AxiosResponse) => {
+        const { status, data } = response
+        const handlers: ErrorHandlers = {
+          400: () => new ApiError(ErrorCode.BadRequest, data),
+          404: () => new ApiError(ErrorCode.ProjectNotFound, data)
+        }
+        throw handlers[status]()
+      })
     const data: dto.GetProjectId = response.data
     return data.id
   }
 
   public async getProject (projectId: number) {
     const response = await this.httpClient.get(`/projects/${projectId}`)
+      .catch((response: AxiosResponse) => {
+        const { status, data } = response
+        const handlers: ErrorHandlers = {
+          404: () => new ApiError(ErrorCode.ProjectNotFound, data)
+        }
+        throw handlers[status]()
+      })
     const data: dto.GetProject = response.data
     return data
   }
@@ -228,13 +243,32 @@ export default class Api {
       })
   }
 
-  public async updateProject (params: { projectId:number, name: string, description: string, privacy: string, tags: string[] }) {
+  public async updateProject (params: { projectId:number, name: string, description: string, privacy: ProjectPrivacy, tags: string[] }) {
     const { projectId, ...requestBody } = params
     await this.httpClient.put(`/projects/${projectId}`, requestBody)
+      .catch((response: AxiosResponse) => {
+        const { status, data } = response
+        const handlers: ErrorHandlers = {
+          400: () => new ApiError(ErrorCode.BadRequest, data),
+          401: () => new ApiError(ErrorCode.UserUnauthorized, data),
+          404: () => new ApiError(ErrorCode.ProjectNotFound, data),
+          409: () => new ApiError(ErrorCode.ProjectConflict, data)
+        }
+        throw handlers[status]()
+      })
   }
 
   public async deleteProject (projectId:number) {
     await this.httpClient.delete(`/projects/${projectId}`)
+      .catch((response: AxiosResponse) => {
+        const { status, data } = response
+        const handlers: ErrorHandlers = {
+          401: () => new ApiError(ErrorCode.UserUnauthorized, data),
+          403: () => new ApiError(ErrorCode.UserPermissionDenied, data),
+          404: () => new ApiError(ErrorCode.ProjectNotFound, data)
+        }
+        throw handlers[status]()
+      })
   }
 
   public async findProjectIds (projectName: string) {
@@ -248,6 +282,17 @@ export default class Api {
     await this.httpClient.put(`/projects/${projectId}/owner`, {
       id: newOwnerId
     })
+      .catch((response: AxiosResponse) => {
+        const { status, data } = response
+        const handlers: ErrorHandlers = {
+          400: () => new ApiError(ErrorCode.BadRequest, data),
+          401: () => new ApiError(ErrorCode.UserUnauthorized, data),
+          403: () => new ApiError(ErrorCode.UserPermissionDenied, data),
+          404: () => new ApiError(ErrorCode.UserOrProjectNotFound, data),
+          409: () => new ApiError(ErrorCode.ProjectConflict, data)
+        }
+        throw handlers[status]()
+      })
   }
 
   public async setProjectPrivacy (params: { projectId: number, privacy: number }) {
@@ -255,10 +300,28 @@ export default class Api {
     await this.httpClient.put(`/projects/${projectId}/privacy`, {
       privacy
     })
+      .catch((response: AxiosResponse) => {
+        const { status, data } = response
+        const handlers: ErrorHandlers = {
+          400: () => new ApiError(ErrorCode.BadRequest, data),
+          401: () => new ApiError(ErrorCode.UserUnauthorized, data),
+          403: () => new ApiError(ErrorCode.UserPermissionDenied, data),
+          404: () => new ApiError(ErrorCode.ProjectNotFound, data)
+        }
+        throw handlers[status]()
+      })
   }
 
   public async getProjectMembers (projectId: number) {
     const response = await this.httpClient.get(`/project/${projectId}/members`)
+      .catch((response: AxiosResponse) => {
+        const { status, data } = response
+        const handlers: ErrorHandlers = {
+          400: () => new ApiError(ErrorCode.BadRequest, data),
+          404: () => new ApiError(ErrorCode.ProjectNotFound, data)
+        }
+        throw handlers[status]()
+      })
     const data: dto.GetProjectMembers = response.data
     return data.members
   }
@@ -268,6 +331,16 @@ export default class Api {
     await this.httpClient.post(`/projects/${projectId}/members`, {
       id: userId
     })
+      .catch((response: AxiosResponse) => {
+        const { status, data } = response
+        const handlers: ErrorHandlers = {
+          400: () => new ApiError(ErrorCode.BadRequest, data),
+          401: () => new ApiError(ErrorCode.UserUnauthorized, data),
+          403: () => new ApiError(ErrorCode.UserPermissionDenied, data),
+          404: () => new ApiError(ErrorCode.UserOrProjectNotFound, data)
+        }
+        throw handlers[status]()
+      })
   }
 
   public async deleteUserFromProjectMembers (params: { userId: number, projectId: number }) {
@@ -277,16 +350,42 @@ export default class Api {
         id: userId
       }
     })
+      .catch((response: AxiosResponse) => {
+        const { status, data } = response
+        const handlers: ErrorHandlers = {
+          400: () => new ApiError(ErrorCode.BadRequest, data),
+          401: () => new ApiError(ErrorCode.UserUnauthorized, data),
+          403: () => new ApiError(ErrorCode.UserPermissionDenied, data),
+          404: () => new ApiError(ErrorCode.UserOrProjectNotFound, data)
+        }
+        throw handlers[status]()
+      })
   }
 
   public async getProjectLabels (projectId: number) {
     const response = await this.httpClient.get(`/api/projects/${projectId}/labels`)
-    const data: dto.GetProjectLabels = (await response).data
+      .catch((response: AxiosResponse) => {
+        const { status, data } = response
+        const handlers: ErrorHandlers = {
+          400: () => new ApiError(ErrorCode.BadRequest, data),
+          404: () => new ApiError(ErrorCode.ProjectNotFound, data)
+        }
+        throw handlers[status]()
+      })
+    const data: dto.GetProjectLabels = response.data
     return data.labels
   }
 
   public async getProjectLabel (labelId: number) {
     const response = await this.httpClient.get(`/api/labels/${labelId}`)
+      .catch((response: AxiosResponse) => {
+        const { status, data } = response
+        const handlers: ErrorHandlers = {
+          400: () => new ApiError(ErrorCode.BadRequest, data),
+          404: () => new ApiError(ErrorCode.ProjectNotFound, data)
+        }
+        throw handlers[status]()
+      })
     const data: dto.GetProjectLabel = response.data
     return data
   }
@@ -294,15 +393,47 @@ export default class Api {
   public async createProjectLabel (params: { projectId: number, name: string, description: string, color: string }) {
     const { projectId, ...requestBody } = params
     await this.httpClient.post(`/api/projects/${projectId}/labels`, requestBody)
+      .catch((response: AxiosResponse) => {
+        const { status, data } = response
+        const handlers: ErrorHandlers = {
+          400: () => new ApiError(ErrorCode.BadRequest, data),
+          401: () => new ApiError(ErrorCode.UserUnauthorized, data),
+          403: () => new ApiError(ErrorCode.UserPermissionDenied, data),
+          404: () => new ApiError(ErrorCode.ProjectNotFound, data),
+          409: () => new ApiError(ErrorCode.LabelConlict, data)
+        }
+        throw handlers[status]()
+      })
   }
 
   public async updateProjectLabel (params: { labelId: number, name: string, description: string, color: string }) {
     const { labelId, ...requestBody } = params
     await this.httpClient.put(`/api/labels/${labelId}`, requestBody)
+      .catch((response: AxiosResponse) => {
+        const { status, data } = response
+        const handlers: ErrorHandlers = {
+          400: () => new ApiError(ErrorCode.BadRequest, data),
+          401: () => new ApiError(ErrorCode.UserUnauthorized, data),
+          403: () => new ApiError(ErrorCode.UserPermissionDenied, data),
+          404: () => new ApiError(ErrorCode.LabelNotFound, data),
+          409: () => new ApiError(ErrorCode.LabelConlict, data)
+        }
+        throw handlers[status]()
+      })
   }
 
   public async deleteProjectLabel (labelId: number) {
     await this.httpClient.delete(`/api/labels/${labelId}`)
+      .catch((response: AxiosResponse) => {
+        const { status, data } = response
+        const handlers: ErrorHandlers = {
+          400: () => new ApiError(ErrorCode.BadRequest, data),
+          401: () => new ApiError(ErrorCode.UserUnauthorized, data),
+          403: () => new ApiError(ErrorCode.UserPermissionDenied, data),
+          404: () => new ApiError(ErrorCode.LabelNotFound, data)
+        }
+        throw handlers[status]()
+      })
   }
 
   public async getProjectIssues (projectId: number) {
