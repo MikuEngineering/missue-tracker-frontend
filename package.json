@@ -11,8 +11,10 @@
     "create-store-module": "node ./scripts/generateStoreModule.js"
   },
   "dependencies": {
+    "@types/js-md5": "^0.4.2",
     "axios": "^0.19.0",
     "core-js": "^3.3.2",
+    "js-md5": "^0.7.3",
     "reflect-metadata": "^0.1.13",
     "vue": "^2.6.10",
     "vue-class-component": "^7.1.0",
