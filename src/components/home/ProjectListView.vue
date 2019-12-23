@@ -8,7 +8,7 @@
           <div class="header__amount">101 projects</div>
         </v-col>
         <v-col cols="12" sm="6" md="4">
-          <ProjectCard @click="goToCreateProjectPage">
+          <ProjectCard @click="openCreateProjectDialog">
             <AddProjectCardContent></AddProjectCardContent>
           </ProjectCard>
         </v-col>
@@ -43,14 +43,17 @@
 
 <script lang="ts">
 import Vue from 'vue'
-import { Component, Prop, Emit } from 'vue-property-decorator'
+import { Component, Prop, Emit, Watch } from 'vue-property-decorator'
 import ProjectCard from '@/components/home/ProjectCard.vue'
 import AddProjectCardContent from '@/components/home/AddProjectCardContent.vue'
 import ProjectInfoCardContent from '@/components/home/ProjectInfoCardContent.vue'
 import AppModule from '@/store/modules/app'
 import UserModule from '@/store/modules/user'
 import { GetProject as Project } from '@/api/dto'
-import { mockGetProjectInfo } from '@/utils/util'
+import { mockGetProjectInfo, apiErrorHandler } from '@/utils/util'
+import Api from '../../api/Api'
+
+const api = Api.getInstance()
 
 @Component({
   components: {
@@ -73,8 +76,8 @@ export default class ProjectListView extends Vue {
     return this.projectIds.length
   }
 
-  goToCreateProjectPage () {
-  }
+  @Emit()
+  openCreateProjectDialog () {}
 
   goToProjectPage (projectName: string) {
   }
@@ -82,16 +85,22 @@ export default class ProjectListView extends Vue {
   goToTagSearchPage (tag: string) {
   }
 
+  @Watch('numOfProjects')
+  onNumOfProjectsChanged () {
+    this.updateProjects()
+  }
+
   async updateProjects () {
     AppModule.setIsPageLoading(true)
     this.isLoadingProjects = true
-    this._projects = await Promise.all(this.projectIds.map(projectId => mockGetProjectInfo(projectId)))
+    try {
+      this._projects = await Promise.all(this.projectIds.map(projectId => api.getProject(projectId)))
+    } catch (error) {
+      apiErrorHandler(error)
+    }
     this.isLoadingProjects = false
     AppModule.setIsPageLoading(false)
   }
-
-  @Emit()
-  createProject () {}
 
   created () {
     this.updateProjects()

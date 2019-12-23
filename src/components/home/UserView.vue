@@ -1,6 +1,9 @@
 <template>
   <div class="fill-height">
-    <CreateProjectDialog v-model="showingCreateProjectDialog">
+    <CreateProjectDialog
+      v-model="showingCreateProjectDialog"
+      @created-project="updateProjectIds"
+    >
       <v-card></v-card>
     </CreateProjectDialog>
     <ProjectEmptyView
@@ -10,6 +13,7 @@
     <ProjectListView
       v-else-if="!isEmpty"
       :projectIds="projectIds"
+      @open-create-project-dialog="showingCreateProjectDialog = true"
     ></ProjectListView>
   </div>
 </template>
@@ -18,11 +22,14 @@
 import Vue from 'vue'
 import { Component } from 'vue-property-decorator'
 import { GetProject as Project } from '@/api/dto'
-import AppModule from '@/store/modules/app'
+import { app as AppModule, user as UserModule } from '@/store/modules/'
 import ProjectEmptyView from './ProjectEmptyView.vue'
 import ProjectListView from './ProjectListView.vue'
 import CreateProjectDialog from './CreateProjectDialog.vue'
-import { mockGetProjectIds } from '@/utils/util'
+import { mockGetProjectIds, apiErrorHandler } from '@/utils/util'
+import Api from '../../api/Api'
+
+const api = Api.getInstance()
 
 @Component({
   components: {
@@ -45,9 +52,15 @@ export default class HomeView extends Vue {
   }
 
   async updateProjectIds () {
+    const id = UserModule.id
+    if (id === null) return
     AppModule.setIsPageLoading(true)
     this.isLoadingProjectIds = true
-    this.projectIds = await mockGetProjectIds()
+    try {
+      this.projectIds = await api.getUserProjectIds(id)
+    } catch (error) {
+      apiErrorHandler(error)
+    }
     this.isLoadingProjectIds = false
     AppModule.setIsPageLoading(false)
   }

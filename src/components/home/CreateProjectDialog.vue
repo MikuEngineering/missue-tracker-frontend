@@ -88,7 +88,7 @@
 
 <script lang="ts">
 import Vue from 'vue'
-import { Component, Prop } from 'vue-property-decorator'
+import { Component, Prop, Emit } from 'vue-property-decorator'
 import AppModule from '@/store/modules/app'
 import Api, { ApiError, BadRequestResponse, OtherClientErrorResponse } from '@/api/Api'
 import ProjectPrivacy from '@/enums/ProjectPrivacy'
@@ -152,6 +152,9 @@ export default class CreateProjectDialog extends Vue {
     this.isAddingTag = false
   }
 
+  @Emit()
+  createdProject () {}
+
   async createProject () {
     try {
       this.isCreating = true
@@ -162,6 +165,7 @@ export default class CreateProjectDialog extends Vue {
       apiErrorHandler(error)
     }
     this.isCreating = false
+    this.createdProject()
   }
 }
 </script>
