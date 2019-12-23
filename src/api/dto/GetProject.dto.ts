@@ -5,5 +5,6 @@ export default interface GetProject {
   createdDate: string // new Date(createdDate)
   description: string,
   privacy: ProjectPrivacy,
-  tags: string[]
+  tags: string[],
+  owner: number
 }
