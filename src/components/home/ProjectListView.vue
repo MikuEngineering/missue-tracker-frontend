@@ -50,18 +50,7 @@ import ProjectInfoCardContent from '@/components/home/ProjectInfoCardContent.vue
 import AppModule from '@/store/modules/app'
 import UserModule from '@/store/modules/user'
 import { GetProject as Project } from '@/api/dto'
-import { delay } from '@/utils/util'
-
-async function mockGetProjectInfo (projectId: number) {
-  await delay(Math.floor(Math.random() * 1000 + 2000))
-  return {
-    name: `project-${projectId}`,
-    createdDate: new Date().toJSON(),
-    description: `A missue-tracker project-${projectId}.`,
-    privacy: Math.floor(Math.random() * 2),
-    tags: ['typescript', 'vue', 'scss']
-  }
-}
+import { mockGetProjectInfo } from '@/utils/util'
 
 @Component({
   components: {
