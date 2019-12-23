@@ -32,17 +32,17 @@
       <v-menu offset-y>
         <template v-slot:activator="{ on }">
           <v-btn color="transparent" v-on="on" elevation="0" x-small>
-            <v-avatar size="36" color="primary" class="white--text">{{
-              nickname[0].toUpperCase()
-            }}</v-avatar>
+            <v-avatar size="36" color="primary" class="white--text">
+              <img :src="avatarUrl" :alt="nickname" />
+            </v-avatar>
             <v-icon color="primary">mdi-menu-down</v-icon>
           </v-btn>
         </template>
         <v-list min-width="200" elevation="0" dense>
-          <v-list-item>
+          <v-list-item @click="goToProfilePage">
             <v-list-item-title class="text-center">
-              Signed in as
-              <span class="title">{{ nickname }}</span>
+              <span>Hi, </span>
+              <span class="title primary--text">{{ nickname }}</span>
             </v-list-item-title>
           </v-list-item>
           <v-divider></v-divider>
@@ -69,9 +69,18 @@ import SearchField from '@/components/shared/SearchField.vue'
 export default class Navbar extends Vue {
   toSearch: string = ''
 
+  get avatarUrl () {
+    return UserModule.gravatarImgUrl
+  }
+
   get nickname () {
-    if (UserModule.profile === null) return 'Guest'
+    if (UserModule.profile === null) return ''
     return UserModule.profile.nickname
+  }
+
+  get username () {
+    if (UserModule.profile === null) return ''
+    return UserModule.profile.username
   }
 
   get isGuest () {
@@ -83,11 +92,15 @@ export default class Navbar extends Vue {
   }
 
   goToAuthPage () {
-    this.$router.push({ name: 'auth' })
+    this.$router.push({ name: 'auth' }).catch(() => {})
   }
 
   goToHomePage () {
-    this.$router.push({ name: 'home' })
+    this.$router.push({ name: 'home' }).catch(() => {})
+  }
+
+  goToProfilePage () {
+    this.$router.push({ name: 'profile', params: { username: this.username } }).catch(() => {})
   }
 
   async logout () {

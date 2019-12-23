@@ -3,6 +3,7 @@ import { Module, VuexModule, Mutation, Action, getModule } from 'vuex-module-dec
 import { SET_ID, SET_KEEP_LOGIN, SET_LOGGED_IN, SET_PROFILE } from './mutationTypes'
 import { GetUser } from '@/api/dto'
 import Api from '@/api/Api'
+import md5 from 'js-md5'
 
 const api = Api.getInstance()
 
@@ -14,6 +15,12 @@ class UserModule extends VuexModule {
   id: number | null = null
   isLoggedIn: boolean = false
   profile: Profile | null = null
+
+  get gravatarImgUrl () {
+    if (this.profile === null) return ''
+    const hash = md5(this.profile.email)
+    return `https://www.gravatar.com/avatar/${hash}`
+  }
 
   @Mutation
   [SET_LOGGED_IN] (value: boolean) {
