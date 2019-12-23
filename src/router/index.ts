@@ -22,7 +22,7 @@ const routes: RouteConfig[] = [
     component: views.HomeView
   },
   {
-    name: 'home',
+    name: 'profile',
     path: '/:username',
     component: views.ProfileView
   }
