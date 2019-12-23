@@ -114,6 +114,7 @@
 </template>
 
 <script lang="ts">
+import md5 from 'js-md5'
 import Vue from 'vue'
 import { Component } from 'vue-property-decorator'
 import DefaultLayout from '@/layouts/DefaultLayout.vue'
@@ -157,8 +158,9 @@ export default class ProfileView extends Vue {
   }
 
   get userAvatarUrl () {
-    if (UserModule.gravatarImgUrl === '') return ''
-    return `${UserModule.gravatarImgUrl}?s=256`
+    if (this.profile === null) return ''
+    const hash = md5(this.profile.email)
+    return `https://www.gravatar.com/avatar/${hash}?s=256`
   }
 
   async toggleEdit () {
@@ -209,6 +211,25 @@ export default class ProfileView extends Vue {
         vm.id = targetId
         vm.profile = targetProfile
       })
+    } catch (error) {
+      if (!(error instanceof ApiError)) throw error
+      const apiError: ApiError = error
+      const data: OtherClientErrorResponse = apiError.data
+      AppModule.addAlert({ type: 'error', message: data.message })
+      next()
+    }
+    AppModule.setIsPageLoading(false)
+  }
+
+  async beforeRouteUpdate (to: Route, from: Route, next: Function) {
+    AppModule.setIsPageLoading(true)
+    const targetUsername = to.params.username
+    try {
+      const targetId = await api.getUserIdByUsername(targetUsername)
+      const targetProfile = await api.getUser(targetId)
+      this.id = targetId
+      this.profile = targetProfile
+      next()
     } catch (error) {
       if (!(error instanceof ApiError)) throw error
       const apiError: ApiError = error
