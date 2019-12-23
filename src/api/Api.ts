@@ -1,6 +1,7 @@
 import axios, { AxiosInstance, AxiosError, AxiosResponse } from 'axios'
 import * as dto from './dto/index'
 import ErrorCode from '@/enums/ErrorCode'
+import ProjectPrivacy from '@/enums/ProjectPrivacy'
 
 export interface BadRequestResponse {
   errors:
@@ -214,8 +215,17 @@ export default class Api {
     return data
   }
 
-  public async createProject (params: { name: string, description: string, privacy: string, tags: string[] }) {
+  public async createProject (params: { name: string, description: string, privacy: ProjectPrivacy, tags: string[] }) {
     await this.httpClient.post(`/projects`, params)
+      .catch((response: AxiosResponse) => {
+        const { status, data } = response
+        const handlers: ErrorHandlers = {
+          400: () => new ApiError(ErrorCode.BadRequest, data),
+          401: () => new ApiError(ErrorCode.UserUnauthorized, data),
+          409: () => new ApiError(ErrorCode.ProjectConflict, data)
+        }
+        throw handlers[status]()
+      })
   }
 
   public async updateProject (params: { projectId:number, name: string, description: string, privacy: string, tags: string[] }) {

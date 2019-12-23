@@ -40,8 +40,8 @@
               v-model="newTag"
               v-if="isAddingTag"
               class="primary--text"
-              @keypress.enter="stopAddingTag"
-              @blur="stopAddingTag"
+              @keypress.enter="stopAddingTag(true)"
+              @blur="stopAddingTag(false)"
             />
             <v-icon v-else>mdi-plus</v-icon>
           </v-chip>
@@ -55,9 +55,32 @@
             hide-details
           ></v-textarea>
         </p>
-        <v-btn v-if="$vuetify.breakpoint.xs" block large color="success">
-          <span>Create</span>
-        </v-btn>
+        <div>Project Privacy</div>
+        <p>
+          <v-switch
+            v-model="privacyBoolean"
+            class="pa-0 mt-1"
+            color="primary"
+            :label="
+              `The project would be ${privacyBoolean ? 'Private' : 'Public'}`
+            "
+            dense
+            hide-details
+            inset
+          >
+          </v-switch>
+        </p>
+        <p class="text-right">
+          <v-btn
+            :block="$vuetify.breakpoint.xs"
+            large
+            color="success"
+            @click="createProject"
+            :loading="isCreating"
+          >
+            <span>Create</span>
+          </v-btn>
+        </p>
       </v-card-text>
     </v-card>
   </v-dialog>
@@ -67,16 +90,36 @@
 import Vue from 'vue'
 import { Component, Prop } from 'vue-property-decorator'
 import AppModule from '@/store/modules/app'
+import Api, { ApiError, BadRequestResponse, OtherClientErrorResponse } from '@/api/Api'
+import ProjectPrivacy from '@/enums/ProjectPrivacy'
+import { apiErrorHandler } from '@/utils/util'
+
+const api = Api.getInstance()
 
 @Component
 export default class CreateProjectDialog extends Vue {
   @Prop() value!: boolean
   isAddingTag = false
+  isCreating = false
   newTag = ''
 
   name = ''
   description = ''
   tags: string[] = []
+  privacyBoolean = false
+
+  get project () {
+    return {
+      name: this.name,
+      description: this.description,
+      tags: this.tags,
+      privacy: this.privacy
+    }
+  }
+
+  get privacy () {
+    return this.privacyBoolean ? ProjectPrivacy.Private : ProjectPrivacy.Public
+  }
 
   get showingDialog () {
     return this.value
@@ -102,10 +145,23 @@ export default class CreateProjectDialog extends Vue {
     this.tags.splice(this.tags.indexOf(tag))
   }
 
-  stopAddingTag () {
+  stopAddingTag (withoutBreak: boolean) {
     this.tags = [...new Set([...this.tags, this.newTag.trim()])].filter(tag => !!tag)
     this.newTag = ''
+    if (withoutBreak) return
     this.isAddingTag = false
+  }
+
+  async createProject () {
+    try {
+      this.isCreating = true
+      await api.createProject(this.project)
+      this.showingDialog = false
+      AppModule.addAlert({ type: 'success', message: 'Project Created Successfully' })
+    } catch (error) {
+      apiErrorHandler(error)
+    }
+    this.isCreating = false
   }
 }
 </script>
