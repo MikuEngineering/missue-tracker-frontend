@@ -59,7 +59,7 @@ export default class CreateProjectDialog extends Vue {
   }
 
   removeTag (tag: string) {
-    this.tags.splice(this.tags.indexOf(tag))
+    this.tags.splice(this.tags.indexOf(tag), 1)
   }
 
   stopAddingTag (withoutBreak: boolean) {
