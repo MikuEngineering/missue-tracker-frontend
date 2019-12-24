@@ -10,16 +10,38 @@
       Project Not Found
     </div>
     <v-container v-else fluid>
+      <ProjectEditorDialog
+        v-model="showingProjectEditDialog"
+        mode="edit"
+        :id="id"
+        :project="project"
+        @action-done="updateProjectInfo"
+      ></ProjectEditorDialog>
       <div class="project-info">
         <v-row>
           <v-col cols="12" sm="8">
+            <p class="mb-0">
+              <v-chip
+                outlined
+                x-small
+                :color="isPrivate ? 'warning' : 'success'"
+                :text-color="isPrivate ? 'warning' : 'success'"
+              >
+                {{ isPrivate ? "Private" : "Public" }}
+              </v-chip>
+            </p>
             <div class="d-flex align-center">
               <p
-                class="project-info__name display-2 mb-0 overflow-auto-x no-scrollbar"
+                class="project-info__name display-1 mb-1 overflow-auto-x no-scrollbar"
               >
                 {{ project.name }}
               </p>
-              <v-btn v-if="isOwner" icon class="ml-2">
+              <v-btn
+                v-if="isOwner"
+                icon
+                class="ml-2"
+                @click="showingProjectEditDialog = true"
+              >
                 <v-icon>
                   mdi-settings
                 </v-icon>
@@ -134,7 +156,9 @@ import { GetProject as Project, GetProjectLabel as Label, GetProjectIssue as Iss
 import Api from '@/api/Api'
 import { apiErrorHandler, getGravatarUrl } from '@/utils/util'
 import { app as AppModule, user as UserModule } from '@/store/modules'
+import ProjectEditorDialog from '@/components/project/ProjectEditorDialog.vue'
 import IssueStatus from '../enums/IssueStatus'
+import ProjectPrivacy from '../enums/ProjectPrivacy'
 
 const api = Api.getInstance()
 
@@ -151,6 +175,7 @@ interface IssueInfo {
 
 @Component({
   components: {
+    ProjectEditorDialog,
     TagField,
     IssueList
   }
@@ -163,6 +188,12 @@ export default class ProjectView extends Vue {
   issueIds: number[] = []
   issues: Issue[] = []
   issueInfos: IssueInfo[] = []
+  showingProjectEditDialog: boolean = false
+
+  get isPrivate () {
+    if (this.project === null) return false
+    return this.project.privacy === ProjectPrivacy.Private
+  }
 
   get isOwner () {
     if (this.id === null || this.project === null) return false
@@ -286,6 +317,20 @@ export default class ProjectView extends Vue {
     AppModule.setIsPageLoading(false)
   }
 
+  async updateProjectInfo () {
+    if (this.id === null) return
+    AppModule.setIsPageLoading(true)
+    this.project = await api.getProject(this.id)
+    await this.$router.replace({
+      name: 'project',
+      params: {
+        username: this.$route.params.username,
+        projectName: this.project.name
+      }
+    }).catch(() => {})
+    AppModule.setIsPageLoading(false)
+  }
+
   mounted () {
     this.updateIssues()
   }
@@ -302,6 +347,7 @@ export default class ProjectView extends Vue {
   .project-info {
     &__name {
       max-width: 250px;
+      white-space: nowrap;
     }
 
     &__date {

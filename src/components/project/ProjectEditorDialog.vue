@@ -58,7 +58,7 @@
 
 <script lang="ts">
 import Vue from 'vue'
-import { Component, Prop, PropSync, Emit } from 'vue-property-decorator'
+import { Component, Prop, PropSync, Emit, Watch } from 'vue-property-decorator'
 import AppModule from '@/store/modules/app'
 import Api, { ApiError, BadRequestResponse, OtherClientErrorResponse } from '@/api/Api'
 import ProjectPrivacy from '@/enums/ProjectPrivacy'
@@ -116,11 +116,11 @@ export default class ProjectEditorDialog extends Vue {
       this.loading = true
       await api.createProject(this.projectModel)
       AppModule.addAlert({ type: 'success', message: 'Project Created Successfully' })
+      this.actionDone()
     } catch (error) {
       apiErrorHandler(error)
     }
     this.loading = false
-    this.actionDone()
   }
 
   async editProject () {
@@ -131,11 +131,11 @@ export default class ProjectEditorDialog extends Vue {
         ...this.projectModel
       })
       AppModule.addAlert({ type: 'success', message: 'Project Updated Successfully' })
+      this.actionDone()
     } catch (error) {
       apiErrorHandler(error)
     }
     this.loading = false
-    this.actionDone()
   }
 
   initProjectModel () {
@@ -145,6 +145,9 @@ export default class ProjectEditorDialog extends Vue {
       tags: [],
       privacy: ProjectPrivacy.Public
     }
+    if (this.project) {
+      this.projectModel = JSON.parse(JSON.stringify(this.project))
+    }
   }
 
   clickDone () {
@@ -153,14 +156,13 @@ export default class ProjectEditorDialog extends Vue {
 
   @Emit()
   actionDone () {
-    this.showingDialog = false
     this.initProjectModel()
+    this.showingDialog = false
   }
 
-  mounted () {
-    if (this.project) {
-      this.projectModel = JSON.parse(JSON.stringify(this.project))
-    }
+  @Watch('showingDialog')
+  onToggleDialog () {
+    this.initProjectModel()
   }
 }
 </script>
