@@ -20,13 +20,13 @@
         @transfer-project="projectTransferred"
       >
       </MemberEditDialog>
-      <ProjectEditorDialog
+      <ProjectEditDialog
         v-model="showingProjectEditDialog"
         mode="edit"
         :id="id"
         :project="project"
         @action-done="updateProjectInfo"
-      ></ProjectEditorDialog>
+      ></ProjectEditDialog>
       <div class="project-info">
         <v-row>
           <v-col cols="12" sm="8">
@@ -172,7 +172,7 @@ import { GetProject as Project, GetProjectLabel as Label, GetProjectIssue as Iss
 import Api from '@/api/Api'
 import { apiErrorHandler, getGravatarUrl } from '@/utils/util'
 import { app as AppModule, user as UserModule } from '@/store/modules'
-import ProjectEditorDialog from '@/components/project/ProjectEditorDialog.vue'
+import ProjectEditDialog from '@/components/project/ProjectEditDialog.vue'
 import MemberEditDialog from '@/components/project/MemberEditDialog.vue'
 import IssueStatus from '../enums/IssueStatus'
 import ProjectPrivacy from '../enums/ProjectPrivacy'
@@ -196,7 +196,7 @@ interface IssueInfo {
 
 @Component({
   components: {
-    ProjectEditorDialog,
+    ProjectEditDialog,
     MemberEditDialog,
     TagField,
     IssueList
