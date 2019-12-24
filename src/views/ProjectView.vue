@@ -113,7 +113,12 @@
           </v-col>
         </v-row>
       </div>
-      <p class="headline grey--text ma-0">Issues</p>
+      <div class="d-flex align-center">
+        <p class="headline grey--text ma-0">Issues</p>
+        <v-btn color="warning" rounded outlined small class="ml-2">
+          <span>Add</span>
+        </v-btn>
+      </div>
       <IssueList :issue-infos="issueInfos"></IssueList>
     </v-container>
   </v-container>
