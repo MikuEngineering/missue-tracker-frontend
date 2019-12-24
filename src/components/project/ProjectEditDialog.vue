@@ -79,7 +79,7 @@ interface Project {
     TagField
   }
 })
-export default class ProjectEditorDialog extends Vue {
+export default class ProjectEditDialog extends Vue {
   @Prop() value!: boolean
   @Prop() project!: Project
   @Prop() mode!: string

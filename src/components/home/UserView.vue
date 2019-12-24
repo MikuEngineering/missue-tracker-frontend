@@ -1,12 +1,12 @@
 <template>
   <div class="fill-height">
-    <ProjectEditorDialog
+    <ProjectEditDialog
       v-model="showingCreateProjectDialog"
       mode="new"
       @action-done="updateProjectIds"
     >
       <v-card></v-card>
-    </ProjectEditorDialog>
+    </ProjectEditDialog>
     <ProjectEmptyView
       v-if="isEmpty && !isLoadingProjectIds"
       @open-create-project-dialog="showingCreateProjectDialog = true"
@@ -26,7 +26,7 @@ import { GetProject as Project } from '@/api/dto'
 import { app as AppModule, user as UserModule } from '@/store/modules/'
 import ProjectEmptyView from './ProjectEmptyView.vue'
 import ProjectListView from './ProjectListView.vue'
-import ProjectEditorDialog from '../project/ProjectEditorDialog.vue'
+import ProjectEditDialog from '../project/ProjectEditDialog.vue'
 import { apiErrorHandler } from '@/utils/util'
 import Api from '../../api/Api'
 
@@ -36,7 +36,7 @@ const api = Api.getInstance()
   components: {
     ProjectEmptyView,
     ProjectListView,
-    ProjectEditorDialog
+    ProjectEditDialog
   }
 })
 export default class HomeView extends Vue {
