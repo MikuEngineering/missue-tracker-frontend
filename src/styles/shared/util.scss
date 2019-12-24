@@ -7,3 +7,23 @@
 .fill-width {
   width: 100%;
 }
+
+.overflow-auto,
+.overflow-auto-x {
+  overflow-x: auto;
+}
+
+.overflow-auto,
+.overflow-auto-y {
+  overflow-y: auto;
+}
+
+@mixin no-scrollbar {
+  &::-webkit-scrollbar {
+    display: none;
+  }
+
+  & {
+    -ms-overflow-style: none;
+  }
+}

@@ -11,7 +11,8 @@ enum ErrorCode {
   ProjectNotFound,
   ProjectConflict,
   LabelNotFound,
-  LabelConlict
+  LabelConlict,
+  IssueNotFound,
 }
 
 export default ErrorCode

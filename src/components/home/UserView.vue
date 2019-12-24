@@ -25,8 +25,8 @@ import { GetProject as Project } from '@/api/dto'
 import { app as AppModule, user as UserModule } from '@/store/modules/'
 import ProjectEmptyView from './ProjectEmptyView.vue'
 import ProjectListView from './ProjectListView.vue'
-import CreateProjectDialog from './CreateProjectDialog.vue'
-import { mockGetProjectIds, apiErrorHandler } from '@/utils/util'
+import CreateProjectDialog from '../project/CreateProjectDialog.vue'
+import { apiErrorHandler } from '@/utils/util'
 import Api from '../../api/Api'
 
 const api = Api.getInstance()

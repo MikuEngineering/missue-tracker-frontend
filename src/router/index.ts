@@ -25,6 +25,11 @@ const routes: RouteConfig[] = [
     name: 'profile',
     path: '/:username',
     component: views.ProfileView
+  },
+  {
+    name: 'project',
+    path: '/:username/:projectName',
+    component: views.ProjectView
   }
 ]
 

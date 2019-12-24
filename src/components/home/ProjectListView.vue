@@ -5,7 +5,7 @@
       <v-row class="project-list mx-auto">
         <v-col class="project-list__header" cols="12">
           <div class="header__title">All Projects</div>
-          <div class="header__amount">101 projects</div>
+          <div class="header__amount">{{ numOfProjects }} projects</div>
         </v-col>
         <v-col cols="12" sm="6" md="4">
           <ProjectCard @click="openCreateProjectDialog">
@@ -50,10 +50,14 @@ import ProjectInfoCardContent from '@/components/home/ProjectInfoCardContent.vue
 import AppModule from '@/store/modules/app'
 import UserModule from '@/store/modules/user'
 import { GetProject as Project } from '@/api/dto'
-import { mockGetProjectInfo, apiErrorHandler } from '@/utils/util'
+import { apiErrorHandler } from '@/utils/util'
 import Api from '../../api/Api'
 
 const api = Api.getInstance()
+
+interface ProjectInfo extends Project {
+  ownerUsername: string
+}
 
 @Component({
   components: {
@@ -66,10 +70,10 @@ export default class ProjectListView extends Vue {
   @Prop() projectIds!: number[]
 
   isLoadingProjects = true
-  _projects: Project[] = []
+  _projectInfos: ProjectInfo[] = []
 
   get projects () {
-    return this.projectIds.map((projectId, index) => this.isLoadingProjects ? null : this._projects[index])
+    return this.projectIds.map((projectId, index) => this.isLoadingProjects ? null : this._projectInfos[index])
   }
 
   get numOfProjects () {
@@ -79,7 +83,11 @@ export default class ProjectListView extends Vue {
   @Emit()
   openCreateProjectDialog () {}
 
-  goToProjectPage (projectName: string) {
+  goToProjectPage (params: { username: string, projectName: string }) {
+    this.$router.push({
+      name: 'project',
+      params
+    })
   }
 
   goToTagSearchPage (tag: string) {
@@ -94,7 +102,15 @@ export default class ProjectListView extends Vue {
     AppModule.setIsPageLoading(true)
     this.isLoadingProjects = true
     try {
-      this._projects = await Promise.all(this.projectIds.map(projectId => api.getProject(projectId)))
+      const projects = await Promise.all(this.projectIds.map(projectId => api.getProject(projectId)))
+      this._projectInfos = await Promise.all(projects.map(async project => {
+        const { username: ownerUsername } = await api.getUser(project.ownerId)
+        const projectInfo: ProjectInfo = {
+          ...project,
+          ownerUsername
+        }
+        return projectInfo
+      }))
     } catch (error) {
       apiErrorHandler(error)
     }

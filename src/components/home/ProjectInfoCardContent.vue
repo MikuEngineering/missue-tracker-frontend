@@ -50,6 +50,7 @@ export default class ProjectInfoCardContent extends Vue {
   @Prop() createdDate!: string
   @Prop() description!: string
   @Prop() privacy!: number
+  @Prop() ownerUsername!: string
   @Prop() tags!: string[]
 
   get createdDateString () {
@@ -60,7 +61,10 @@ export default class ProjectInfoCardContent extends Vue {
 
   @Emit()
   clickProject () {
-    return this.name
+    return {
+      username: this.ownerUsername,
+      projectName: this.name
+    }
   }
 
   @Emit()

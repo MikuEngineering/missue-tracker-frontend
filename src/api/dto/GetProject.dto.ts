@@ -6,5 +6,5 @@ export default interface GetProject {
   description: string,
   privacy: ProjectPrivacy,
   tags: string[],
-  owner: number
+  ownerId: number
 }
