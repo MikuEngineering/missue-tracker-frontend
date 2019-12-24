@@ -314,7 +314,7 @@ export default class Api {
   }
 
   public async getProjectMembers (projectId: number) {
-    const response = await this.httpClient.get(`/project/${projectId}/members`)
+    const response = await this.httpClient.get(`/projects/${projectId}/members`)
       .catch((response: AxiosResponse) => {
         const { status, data } = response
         const handlers: ErrorHandlers = {

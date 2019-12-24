@@ -11,18 +11,110 @@
     </div>
     <v-container v-else fluid>
       <div class="project-info">
-        <p class="project-info__name display-2">{{ project.name }}</p>
-        <p class="project-info__date subheader-1 grey--text text--lighten-1">
-          {{ createdDateString }}
-        </p>
-        <p
-          class="project-info__description subheader-1 grey--text overflow-auto"
-        >
-          {{ project.description }}
-        </p>
-        <TagField v-model="project.tags" :readonly="true"></TagField>
-        <IssueList :issue-infos="issueInfos"></IssueList>
+        <v-row>
+          <v-col cols="12" sm="8">
+            <div class="d-flex align-center">
+              <p
+                class="project-info__name display-2 mb-0 overflow-auto-x no-scrollbar"
+              >
+                {{ project.name }}
+              </p>
+              <v-btn v-if="isOwner" icon class="ml-2">
+                <v-icon>
+                  mdi-settings
+                </v-icon>
+              </v-btn>
+            </div>
+            <p
+              class="project-info__date subheader-1 grey--text text--lighten-1"
+            >
+              <span>{{ createdDateString }}</span>
+            </p>
+            <p
+              class="project-info__description subheader-1 grey--text overflow-auto"
+            >
+              {{ project.description }}
+            </p>
+            <TagField v-model="project.tags" :readonly="true"></TagField>
+          </v-col>
+          <v-col cols="12" sm="4">
+            <v-container class="fill-height">
+              <v-row class="fill-height">
+                <v-divider
+                  v-if="$vuetify.breakpoint.smAndUp"
+                  vertical
+                  class="mr-2"
+                ></v-divider>
+                <div class="fill-height d-flex flex-column">
+                  <div>
+                    <div class="d-flex align-center mb-2">
+                      <p class="headline grey--text mb-0">
+                        Members
+                      </p>
+                      <v-btn v-if="isOwner" icon small class="ml-1">
+                        <v-icon>
+                          mdi-settings
+                        </v-icon>
+                      </v-btn>
+                    </div>
+                    <p class="full-max-width overflow-x no-scrollbar">
+                      <v-tooltip
+                        v-for="(member, index) in members"
+                        :key="`member-avatar-${index}`"
+                        bottom
+                      >
+                        <template v-slot:activator="{ on }">
+                          <v-avatar
+                            v-on="on"
+                            @click="goToUserProfile(member.username)"
+                            size="36"
+                            :class="{ 'ml-2': index > 0 }"
+                          >
+                            <img :src="getGravatarUrl(member.email)" />
+                          </v-avatar>
+                        </template>
+                        <span>{{ member.nickname }}</span>
+                      </v-tooltip>
+                    </p>
+                  </div>
+                  <div>
+                    <div class="d-flex align-center mb-2">
+                      <p class="headline grey--text mb-0">
+                        Labels
+                      </p>
+                      <v-btn v-if="isOwner" icon small class="ml-1">
+                        <v-icon>
+                          mdi-settings
+                        </v-icon>
+                      </v-btn>
+                    </div>
+                    <p class="full-max-width overflow-x no-scrollbar">
+                      <v-tooltip
+                        v-for="(label, index) in labels"
+                        :key="`label-${index}`"
+                        bottom
+                      >
+                        <template v-slot:activator="{ on }">
+                          <v-chip
+                            dark
+                            :color="`#${label.color}`"
+                            v-on="on"
+                            :class="{ 'ml-2': index > 0 }"
+                            >{{ label.name }}</v-chip
+                          >
+                        </template>
+                        <span>{{ label.description }}</span>
+                      </v-tooltip>
+                    </p>
+                  </div>
+                </div>
+              </v-row>
+            </v-container>
+          </v-col>
+        </v-row>
       </div>
+      <p class="headline grey--text ma-0">Issues</p>
+      <IssueList :issue-infos="issueInfos"></IssueList>
     </v-container>
   </v-container>
 </template>
@@ -35,7 +127,7 @@ import TagField from '@/components/project/TagField.vue'
 import IssueList from '@/components/project/IssueList.vue'
 import { GetProject as Project, GetProjectLabel as Label, GetProjectIssue as Issue, GetUser as User } from '@/api/dto'
 import Api from '@/api/Api'
-import { apiErrorHandler } from '@/utils/util'
+import { apiErrorHandler, getGravatarUrl } from '@/utils/util'
 import { app as AppModule, user as UserModule } from '@/store/modules'
 import IssueStatus from '../enums/IssueStatus'
 
@@ -62,6 +154,7 @@ export default class ProjectView extends Vue {
   id: number | null = null
   project: Project | null = null
   members: User[] = []
+  labels: Label[] = []
   issueIds: number[] = []
   issues: Issue[] = []
   issueInfos: IssueInfo[] = []
@@ -116,6 +209,19 @@ export default class ProjectView extends Vue {
     }
   }
 
+  getGravatarUrl (email: string) {
+    return getGravatarUrl(email)
+  }
+
+  goToUserProfile (username: string) {
+    this.$router.push({
+      name: 'profile',
+      params: {
+        username
+      }
+    })
+  }
+
   async beforeRouteEnter (to: Route, from: Route, next: Function) {
     AppModule.setIsPageLoading(true)
     const { username: ownerUsername, projectName } = to.params
@@ -124,10 +230,20 @@ export default class ProjectView extends Vue {
         ownerUsername,
         projectName
       })
-      const targetProject = await api.getProject(targetId)
+      const [targetProject, targetMemberIds, targetLabelIds] = await Promise.all([
+        api.getProject(targetId),
+        api.getProjectMembers(targetId),
+        api.getProjectLabels(targetId)
+      ])
+      const [targetMembers, targetLabels] = await Promise.all([
+        Promise.all(targetMemberIds.map(id => api.getUser(id))),
+        Promise.all(targetLabelIds.map(id => api.getProjectLabel(id)))
+      ])
       next((vm: ProjectView) => {
         vm.id = targetId
         vm.project = targetProject
+        vm.members = targetMembers
+        vm.labels = targetLabels
       })
     } catch (error) {
       apiErrorHandler(error)
@@ -144,9 +260,19 @@ export default class ProjectView extends Vue {
         ownerUsername,
         projectName
       })
-      const targetProject = await api.getProject(targetId)
+      const [targetProject, targetMemberIds, targetLabelIds] = await Promise.all([
+        api.getProject(targetId),
+        api.getProjectMembers(targetId),
+        api.getProjectLabels(targetId)
+      ])
+      const [targetMembers, targetLabels] = await Promise.all([
+        Promise.all(targetMemberIds.map(id => api.getUser(id))),
+        Promise.all(targetLabelIds.map(id => api.getProjectLabel(id)))
+      ])
       this.id = targetId
       this.project = targetProject
+      this.members = targetMembers
+      this.labels = targetLabels
       next()
     } catch (error) {
       apiErrorHandler(error)
@@ -170,6 +296,7 @@ export default class ProjectView extends Vue {
 
   .project-info {
     &__name {
+      max-width: 250px;
     }
 
     &__date {
