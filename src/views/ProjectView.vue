@@ -10,10 +10,16 @@
       Project Not Found
     </div>
     <v-container v-else fluid>
+      <LabelEditDialog
+        v-model="showingLabelEditDialog"
+        :project-id="id"
+        :labels="labels"
+        @action-done="updateLabels"
+      >
+      </LabelEditDialog>
       <MemberEditDialog
         v-model="showingMemberEditDialog"
         :members="members"
-        :id="id"
         :project-id="id"
         :owner="this.project.ownerId"
         @action-done="updateMembers"
@@ -121,7 +127,13 @@
                       <p class="headline grey--text mb-0">
                         Labels
                       </p>
-                      <v-btn v-if="isOwner || isAdmin" icon small class="ml-1">
+                      <v-btn
+                        v-if="isOwner || isAdmin"
+                        icon
+                        small
+                        class="ml-1"
+                        @click="showingLabelEditDialog = true"
+                      >
                         <v-icon>
                           mdi-settings
                         </v-icon>
@@ -175,12 +187,17 @@ import { apiErrorHandler, getGravatarUrl } from '@/utils/util'
 import { app as AppModule, user as UserModule } from '@/store/modules'
 import ProjectEditDialog from '@/components/project/ProjectEditDialog.vue'
 import MemberEditDialog from '@/components/project/MemberEditDialog.vue'
+import LabelEditDialog from '@/components/project/LabelEditDialog.vue'
 import IssueStatus from '../enums/IssueStatus'
 import ProjectPrivacy from '../enums/ProjectPrivacy'
 
 const api = Api.getInstance()
 
 interface Member extends User {
+  id: number
+}
+
+interface LabelInfo extends Label {
   id: number
 }
 
@@ -199,6 +216,7 @@ interface IssueInfo {
   components: {
     ProjectEditDialog,
     MemberEditDialog,
+    LabelEditDialog,
     TagField,
     IssueList
   }
@@ -207,12 +225,13 @@ export default class ProjectView extends Vue {
   id: number | null = null
   project: Project | null = null
   members: Member[] = []
-  labels: Label[] = []
+  labels: LabelInfo[] = []
   issueIds: number[] = []
   issues: Issue[] = []
   issueInfos: IssueInfo[] = []
   showingProjectEditDialog: boolean = false
   showingMemberEditDialog: boolean = false
+  showingLabelEditDialog: boolean = false
 
   get isPrivate () {
     if (this.project === null) return false
@@ -278,7 +297,7 @@ export default class ProjectView extends Vue {
         vm.id = targetId
         vm.project = targetProject
         vm.members = targetMembers.map((user, index) => ({ ...user, id: targetMemberIds[index] }))
-        vm.labels = targetLabels
+        vm.labels = targetLabels.map((label, index) => ({ ...label, id: targetLabelIds[index] }))
         vm.updateIssues()
       })
     } catch (error) {
@@ -308,7 +327,7 @@ export default class ProjectView extends Vue {
       this.id = targetId
       this.project = targetProject
       this.members = targetMembers.map((user, index) => ({ ...user, id: targetMemberIds[index] }))
-      this.labels = targetLabels
+      this.labels = targetLabels.map((label, index) => ({ ...label, id: targetLabelIds[index] }))
       this.updateIssues()
       next()
     } catch (error) {
@@ -343,6 +362,13 @@ export default class ProjectView extends Vue {
     AppModule.setIsPageLoading(false)
   }
 
+  async updateProjectInfo () {
+    if (this.id === null) return
+    AppModule.setIsPageLoading(true)
+    this.project = await api.getProject(this.id)
+    AppModule.setIsPageLoading(false)
+  }
+
   async updateMembers () {
     if (this.id === null) return
     AppModule.setIsPageLoading(true)
@@ -350,6 +376,16 @@ export default class ProjectView extends Vue {
     const members = await Promise.all(memberIds.map(id => api.getUser(id)))
     this.members = members.map((user, index) => ({ ...user, id: memberIds[index] }))
     AppModule.setIsPageLoading(false)
+  }
+
+  async updateLabels () {
+    if (this.id === null) return
+    AppModule.setIsPageLoading(true)
+    const labelIds = await api.getProjectLabels(this.id)
+    const labels = await Promise.all(labelIds.map(id => api.getProjectLabel(id)))
+    this.labels = labels.map((label, index) => ({ ...label, id: labelIds[index] }))
+    AppModule.setIsPageLoading(false)
+    this.updateIssues()
   }
 
   async updateIssues () {
@@ -384,13 +420,6 @@ export default class ProjectView extends Vue {
     } catch (error) {
       apiErrorHandler(error)
     }
-  }
-
-  async updateProjectInfo () {
-    if (this.id === null) return
-    AppModule.setIsPageLoading(true)
-    this.project = await api.getProject(this.id)
-    AppModule.setIsPageLoading(false)
   }
 }
 </script>
