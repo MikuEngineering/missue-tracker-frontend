@@ -1,5 +1,5 @@
 <template>
-  <v-autocomplete
+  <v-text-field
     v-model="toSearch"
     hide-details
     dense
@@ -11,7 +11,7 @@
     prepend-inner-icon="mdi-magnify"
     clearable
     @keypress.enter="$emit('search')"
-  ></v-autocomplete>
+  ></v-text-field>
 </template>
 
 <script lang="ts">

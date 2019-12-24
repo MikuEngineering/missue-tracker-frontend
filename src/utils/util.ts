@@ -1,6 +1,7 @@
 import { ApiError, BadRequestResponse, OtherClientErrorResponse } from '@/api/Api'
 import ErrorCode from '@/enums/ErrorCode'
 import AppModule from '@/store/modules/app'
+import IssueStatus from '@/enums/IssueStatus'
 
 export function delay (ms: number) {
   return new Promise(resolve => setTimeout(resolve, ms))
@@ -20,6 +21,26 @@ export async function mockGetProjectInfo (projectId: number) {
     description: `A missue-tracker project-${projectId}.`,
     privacy: Math.floor(Math.random() * 2),
     tags: ['typescript', 'vue', 'scss']
+  }
+}
+
+export async function mockGetIssueIds () {
+  await delay(300)
+  return ''.padEnd(29, ' ').split(' ').map((_, i) => i)
+  // return []
+}
+
+export async function mockGetIssueInfo (issueId: number) {
+  await delay(Math.floor(Math.random() * 500 + 500))
+  return {
+    title: `issue title text ${issueId}`,
+    number: issueId + 1,
+    owner: 1,
+    labels: [1, 2, 3],
+    assignees: [1],
+    status: Math.floor(Math.random() * 2) ? IssueStatus.Open : IssueStatus.Closed,
+    createdTime: new Date().toJSON(),
+    updatedTime: new Date().toJSON()
   }
 }
 

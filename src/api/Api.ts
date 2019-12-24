@@ -202,9 +202,9 @@ export default class Api {
       })
   }
 
-  public async getProjectIdByOwnerNameAndProjectName (params: { ownerUserame: string, projectName: string }) {
-    const { ownerUserame, projectName } = params
-    const response = await this.httpClient.get(`/projects?owner_username=${ownerUserame}&project_name=${projectName}`)
+  public async getProjectIdByOwnerNameAndProjectName (params: { ownerUsername: string, projectName: string }) {
+    const { ownerUsername, projectName } = params
+    const response = await this.httpClient.get(`/projects?owner_username=${ownerUsername}&project_name=${projectName}`)
       .catch((response: AxiosResponse) => {
         const { status, data } = response
         const handlers: ErrorHandlers = {
@@ -213,8 +213,9 @@ export default class Api {
         }
         throw handlers[status]()
       })
-    const data: dto.GetProjectId = response.data
-    return data.id
+    // const data: dto.GetProjectId = response.data
+    const data: number = response.data
+    return data
   }
 
   public async getProject (projectId: number) {
@@ -363,7 +364,7 @@ export default class Api {
   }
 
   public async getProjectLabels (projectId: number) {
-    const response = await this.httpClient.get(`/api/projects/${projectId}/labels`)
+    const response = await this.httpClient.get(`/projects/${projectId}/labels`)
       .catch((response: AxiosResponse) => {
         const { status, data } = response
         const handlers: ErrorHandlers = {
@@ -377,7 +378,7 @@ export default class Api {
   }
 
   public async getProjectLabel (labelId: number) {
-    const response = await this.httpClient.get(`/api/labels/${labelId}`)
+    const response = await this.httpClient.get(`/labels/${labelId}`)
       .catch((response: AxiosResponse) => {
         const { status, data } = response
         const handlers: ErrorHandlers = {
@@ -392,7 +393,7 @@ export default class Api {
 
   public async createProjectLabel (params: { projectId: number, name: string, description: string, color: string }) {
     const { projectId, ...requestBody } = params
-    await this.httpClient.post(`/api/projects/${projectId}/labels`, requestBody)
+    await this.httpClient.post(`/projects/${projectId}/labels`, requestBody)
       .catch((response: AxiosResponse) => {
         const { status, data } = response
         const handlers: ErrorHandlers = {
@@ -408,7 +409,7 @@ export default class Api {
 
   public async updateProjectLabel (params: { labelId: number, name: string, description: string, color: string }) {
     const { labelId, ...requestBody } = params
-    await this.httpClient.put(`/api/labels/${labelId}`, requestBody)
+    await this.httpClient.put(`/labels/${labelId}`, requestBody)
       .catch((response: AxiosResponse) => {
         const { status, data } = response
         const handlers: ErrorHandlers = {
@@ -423,7 +424,7 @@ export default class Api {
   }
 
   public async deleteProjectLabel (labelId: number) {
-    await this.httpClient.delete(`/api/labels/${labelId}`)
+    await this.httpClient.delete(`/labels/${labelId}`)
       .catch((response: AxiosResponse) => {
         const { status, data } = response
         const handlers: ErrorHandlers = {
@@ -437,49 +438,101 @@ export default class Api {
   }
 
   public async getProjectIssues (projectId: number) {
-    const response = await this.httpClient.get(`/api/projects/${projectId}/issues`)
+    const response = await this.httpClient.get(`/projects/${projectId}/issues`)
+      .catch((response: AxiosResponse) => {
+        const { status, data } = response
+        const handlers: ErrorHandlers = {
+          400: () => new ApiError(ErrorCode.BadRequest, data),
+          404: () => new ApiError(ErrorCode.ProjectNotFound, data)
+        }
+        throw handlers[status]()
+      })
     const data: dto.GetProjectIssues = response.data
     return data.issues
   }
 
   public async createProjectIssue (params: { projectId: number, title: string, comment: { content: string }, labels: number[], asignees: number[] }) {
     const { projectId, ...requestBody } = params
-    await this.httpClient.post(`/api/projects/${projectId}/issues`, requestBody)
+    await this.httpClient.post(`/projects/${projectId}/issues`, requestBody)
+      .catch((response: AxiosResponse) => {
+        const { status, data } = response
+        const handlers: ErrorHandlers = {
+          400: () => new ApiError(ErrorCode.BadRequest, data),
+          401: () => new ApiError(ErrorCode.UserUnauthorized, data),
+          403: () => new ApiError(ErrorCode.UserPermissionDenied, data),
+          404: () => new ApiError(ErrorCode.ProjectNotFound, data)
+        }
+        throw handlers[status]()
+      })
+  }
+
+  public async getProjectIssue (issueId: number) {
+    const response = await this.httpClient.get(`/issues/${issueId}`)
+      .catch((response: AxiosResponse) => {
+        const { status, data } = response
+        const handlers: ErrorHandlers = {
+          400: () => new ApiError(ErrorCode.BadRequest, data),
+          404: () => new ApiError(ErrorCode.IssueNotFound, data)
+        }
+        throw handlers[status]()
+      })
+    const data: dto.GetProjectIssue = response.data
+    return data
   }
 
   public async updateProjectIssue (params: { issueId: number, title: string, labels: number[], asignees: number[] }) {
     const { issueId, ...requestBody } = params
-    await this.httpClient.put(`/api/issues/${issueId}`, requestBody)
+    await this.httpClient.put(`/issues/${issueId}`, requestBody)
+      .catch((response: AxiosResponse) => {
+        const { status, data } = response
+        const handlers: ErrorHandlers = {
+          400: () => new ApiError(ErrorCode.BadRequest, data),
+          401: () => new ApiError(ErrorCode.UserUnauthorized, data),
+          403: () => new ApiError(ErrorCode.UserPermissionDenied, data),
+          404: () => new ApiError(ErrorCode.IssueNotFound, data)
+        }
+        throw handlers[status]()
+      })
   }
 
   public async deleteProjectIssue (issueId:number) {
     await this.httpClient.delete(`/issues/${issueId}`)
+      .catch((response: AxiosResponse) => {
+        const { status, data } = response
+        const handlers: ErrorHandlers = {
+          400: () => new ApiError(ErrorCode.BadRequest, data),
+          401: () => new ApiError(ErrorCode.UserUnauthorized, data),
+          403: () => new ApiError(ErrorCode.UserPermissionDenied, data),
+          404: () => new ApiError(ErrorCode.IssueNotFound, data)
+        }
+        throw handlers[status]()
+      })
   }
 
   public async getIssueComments (issueId: number) {
-    const response = await this.httpClient.get(`/api/issues/${issueId}/comments`)
+    const response = await this.httpClient.get(`/issues/${issueId}/comments`)
     const data: dto.GetIssueComments = response.data
     return data.comments
   }
 
   public async createIssueComment (params: { issueId: number, content: string }) {
     const { issueId, ...requestBody } = params
-    await this.httpClient.post(`/api/issues/${issueId}/comments`, requestBody)
+    await this.httpClient.post(`/issues/${issueId}/comments`, requestBody)
   }
 
   public async getIssueComment (commentId: number) {
-    const response = await this.httpClient.get(`/api/comments/${commentId}`)
+    const response = await this.httpClient.get(`/comments/${commentId}`)
     const data: dto.GetIssueComment = response.data
     return data
   }
 
   public async updateIssueComment (params: { commentId: number, content: string }) {
     const { commentId, ...requestBody } = params
-    await this.httpClient.put(`/api/comments/${commentId}`, requestBody)
+    await this.httpClient.put(`/comments/${commentId}`, requestBody)
   }
 
   public async setIssueCommentStatus (params: { commentId: number, status: boolean }) {
     const { commentId, ...requestBody } = params
-    await this.httpClient.put(`/api/comments/${commentId}/status`, requestBody)
+    await this.httpClient.put(`/comments/${commentId}/status`, requestBody)
   }
 }
