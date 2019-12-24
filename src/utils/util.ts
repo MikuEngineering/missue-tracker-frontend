@@ -2,6 +2,7 @@ import { ApiError, BadRequestResponse, OtherClientErrorResponse } from '@/api/Ap
 import ErrorCode from '@/enums/ErrorCode'
 import AppModule from '@/store/modules/app'
 import IssueStatus from '@/enums/IssueStatus'
+import md5 from 'js-md5'
 
 export function delay (ms: number) {
   return new Promise(resolve => setTimeout(resolve, ms))
@@ -56,4 +57,9 @@ export function apiErrorHandler (error: Error) {
     const data: OtherClientErrorResponse = apiError.data
     AppModule.addAlert({ type: 'error', message: data.message })
   }
+}
+
+export function getGravatarUrl (email: string, size?: number) {
+  const hash = md5(email)
+  return `https://www.gravatar.com/avatar/${hash}${size ? `?s=${size}` : ''}`
 }
