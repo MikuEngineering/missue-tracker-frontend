@@ -26,6 +26,7 @@
         :id="id"
         :project="project"
         @action-done="updateProjectInfo"
+        @change-project-name="projectNameChangeded"
       ></ProjectEditDialog>
       <div class="project-info">
         <v-row>
@@ -243,40 +244,6 @@ export default class ProjectView extends Vue {
     return this.id === null
   }
 
-  async updateIssues () {
-    await this.$nextTick()
-    if (this.id === null) return
-    try {
-      AppModule.setIsPageLoading(true)
-      this.issueIds = await api.getProjectIssues(this.id)
-      this.issues = await Promise.all(this.issueIds.map(issueId => api.getProjectIssue(issueId)))
-      this.issueInfos = await Promise.all(this.issues.map(async issue => {
-        const owner = await api.getUser(issue.owner)
-        const assignees = await Promise.all(issue.assignees.map(async id => {
-          const assignee = await api.getUser(id)
-          return assignee
-        }))
-        const labels = await Promise.all(issue.labels.map(async id => {
-          const label = await api.getProjectLabel(id)
-          return label
-        }))
-        return {
-          title: issue.title,
-          number: issue.number,
-          status: issue.status,
-          owner,
-          assignees,
-          labels,
-          createdTime: new Date(issue.createdTime),
-          numOfComments: 0
-        }
-      }))
-      AppModule.setIsPageLoading(false)
-    } catch (error) {
-      apiErrorHandler(error)
-    }
-  }
-
   getGravatarUrl (email: string) {
     return getGravatarUrl(email)
   }
@@ -351,6 +318,18 @@ export default class ProjectView extends Vue {
     AppModule.setIsPageLoading(false)
   }
 
+  async projectNameChangeded (projectName: string) {
+    AppModule.setIsPageLoading(true)
+    await this.$router.replace({
+      name: 'project',
+      params: {
+        username: this.$route.params.username,
+        projectName
+      }
+    }).catch(() => {})
+    AppModule.setIsPageLoading(false)
+  }
+
   async projectTransferred (username: string) {
     if (this.project === null) return
     AppModule.setIsPageLoading(true)
@@ -373,17 +352,44 @@ export default class ProjectView extends Vue {
     AppModule.setIsPageLoading(false)
   }
 
+  async updateIssues () {
+    await this.$nextTick()
+    if (this.id === null) return
+    try {
+      AppModule.setIsPageLoading(true)
+      this.issueIds = await api.getProjectIssues(this.id)
+      this.issues = await Promise.all(this.issueIds.map(issueId => api.getProjectIssue(issueId)))
+      this.issueInfos = await Promise.all(this.issues.map(async issue => {
+        const owner = await api.getUser(issue.owner)
+        const assignees = await Promise.all(issue.assignees.map(async id => {
+          const assignee = await api.getUser(id)
+          return assignee
+        }))
+        const labels = await Promise.all(issue.labels.map(async id => {
+          const label = await api.getProjectLabel(id)
+          return label
+        }))
+        return {
+          title: issue.title,
+          number: issue.number,
+          status: issue.status,
+          owner,
+          assignees,
+          labels,
+          createdTime: new Date(issue.createdTime),
+          numOfComments: 0
+        }
+      }))
+      AppModule.setIsPageLoading(false)
+    } catch (error) {
+      apiErrorHandler(error)
+    }
+  }
+
   async updateProjectInfo () {
     if (this.id === null) return
     AppModule.setIsPageLoading(true)
     this.project = await api.getProject(this.id)
-    await this.$router.replace({
-      name: 'project',
-      params: {
-        username: this.$route.params.username,
-        projectName: this.project.name
-      }
-    }).catch(() => {})
     AppModule.setIsPageLoading(false)
   }
 }

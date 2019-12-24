@@ -116,6 +116,8 @@ export default class ProjectEditDialog extends Vue {
       this.loading = true
       await api.createProject(this.projectModel)
       AppModule.addAlert({ type: 'success', message: 'Project Created Successfully' })
+      this.initProjectModel()
+      this.showingDialog = false
       this.actionDone()
     } catch (error) {
       apiErrorHandler(error)
@@ -131,7 +133,13 @@ export default class ProjectEditDialog extends Vue {
         ...this.projectModel
       })
       AppModule.addAlert({ type: 'success', message: 'Project Updated Successfully' })
-      this.actionDone()
+      if (this.project.name !== this.projectModel.name) {
+        this.changeProjectName(this.projectModel.name)
+      } else {
+        this.actionDone()
+      }
+      this.initProjectModel()
+      this.showingDialog = false
     } catch (error) {
       apiErrorHandler(error)
     }
@@ -155,9 +163,12 @@ export default class ProjectEditDialog extends Vue {
   }
 
   @Emit()
-  actionDone () {
-    this.initProjectModel()
+  actionDone () {}
+
+  @Emit()
+  changeProjectName (projectName: string) {
     this.showingDialog = false
+    return projectName
   }
 
   @Watch('showingDialog')
