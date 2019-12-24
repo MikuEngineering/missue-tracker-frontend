@@ -146,7 +146,12 @@ export default class MemberEditDialog extends Vue {
 
   async action (username: string) {
     if (this.currentMode === Mode.Overview) {
-
+      await this.$router.push({
+        name: 'profile',
+        params: {
+          username
+        }
+      }).catch(() => {})
     } else {
       this.loading = true
       try {
