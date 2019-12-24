@@ -2,24 +2,24 @@
   <v-dialog v-model="showingDialog" max-width="600">
     <v-card class="fill-parent">
       <v-card-title>
-        <span class="display-1">Create Project</span>
+        <span class="display-1">{{ text }} Project</span>
       </v-card-title>
       <v-card-text class="mt-3">
         <div>Project Name</div>
         <p style="max-width: 250px;">
           <v-text-field
-            v-model="name"
+            v-model="projectModel.name"
             outlined
             hide-details
             dense
           ></v-text-field>
         </p>
         <div>Project Tags</div>
-        <TagField v-model="tags"></TagField>
+        <TagField v-model="projectModel.tags"></TagField>
         <div>Project Description</div>
         <p>
           <v-textarea
-            v-model="description"
+            v-model="projectModel.description"
             outlined
             no-resize
             hide-details
@@ -45,10 +45,10 @@
             :block="$vuetify.breakpoint.xs"
             large
             color="success"
-            @click="createProject"
-            :loading="isCreating"
+            @click="clickDone"
+            :loading="loading"
           >
-            <span>Create</span>
+            <span>{{ text }}</span>
           </v-btn>
         </p>
       </v-card-text>
@@ -58,7 +58,7 @@
 
 <script lang="ts">
 import Vue from 'vue'
-import { Component, Prop, Emit } from 'vue-property-decorator'
+import { Component, Prop, PropSync, Emit } from 'vue-property-decorator'
 import AppModule from '@/store/modules/app'
 import Api, { ApiError, BadRequestResponse, OtherClientErrorResponse } from '@/api/Api'
 import ProjectPrivacy from '@/enums/ProjectPrivacy'
@@ -67,68 +67,104 @@ import TagField from './TagField.vue'
 
 const api = Api.getInstance()
 
+interface Project {
+  name: string,
+  description: string,
+  tags: string[]
+  privacy: ProjectPrivacy
+}
+
 @Component({
   components: {
     TagField
   }
 })
-export default class CreateProjectDialog extends Vue {
+export default class ProjectEditorDialog extends Vue {
   @Prop() value!: boolean
-  isCreating = false
-
-  name = ''
-  description = ''
-  tags: string[] = []
-  privacyBoolean = false
-
-  get project () {
-    return {
-      name: this.name,
-      description: this.description,
-      tags: this.tags,
-      privacy: this.privacy
-    }
-  }
-
-  get privacy () {
-    return this.privacyBoolean ? ProjectPrivacy.Private : ProjectPrivacy.Public
+  @Prop() project!: Project
+  @Prop() mode!: string
+  @Prop() id!: number
+  loading: boolean = false
+  projectModel: Project = {
+    name: '',
+    description: '',
+    tags: [],
+    privacy: ProjectPrivacy.Public
   }
 
   get showingDialog () {
     return this.value
   }
+
   set showingDialog (value:boolean) {
-    if (!value) {
-      this.name = ''
-      this.description = ''
-      this.tags = []
-    }
     this.$emit('input', value)
   }
 
-  @Emit()
-  createdProject () {}
+  get text () {
+    return this.mode === 'new' ? 'Create' : 'Edit'
+  }
+
+  get privacyBoolean () {
+    return this.projectModel.privacy === ProjectPrivacy.Private
+  }
+  set privacyBoolean (value: boolean) {
+    this.projectModel.privacy = value ? ProjectPrivacy.Private : ProjectPrivacy.Public
+  }
 
   async createProject () {
     try {
-      this.isCreating = true
-      await api.createProject(this.project)
-      this.showingDialog = false
+      this.loading = true
+      await api.createProject(this.projectModel)
       AppModule.addAlert({ type: 'success', message: 'Project Created Successfully' })
     } catch (error) {
       apiErrorHandler(error)
     }
-    this.isCreating = false
-    this.createdProject()
+    this.loading = false
+    this.actionDone()
+  }
+
+  async editProject () {
+    try {
+      this.loading = true
+      await api.updateProject({
+        projectId: this.id,
+        ...this.projectModel
+      })
+      AppModule.addAlert({ type: 'success', message: 'Project Updated Successfully' })
+    } catch (error) {
+      apiErrorHandler(error)
+    }
+    this.loading = false
+    this.actionDone()
+  }
+
+  initProjectModel () {
+    this.projectModel = {
+      name: '',
+      description: '',
+      tags: [],
+      privacy: ProjectPrivacy.Public
+    }
+  }
+
+  clickDone () {
+    this.mode === 'new' ? this.createProject() : this.editProject()
+  }
+
+  @Emit()
+  actionDone () {
+    this.showingDialog = false
+    this.initProjectModel()
+  }
+
+  mounted () {
+    if (this.project) {
+      this.projectModel = JSON.parse(JSON.stringify(this.project))
+    }
   }
 }
 </script>
 
 <style lang="scss" scoped>
 @import "@/styles/shared/util";
-
-#tag-input {
-  width: 64px;
-  outline: 0;
-}
 </style>
