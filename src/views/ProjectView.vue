@@ -10,6 +10,16 @@
       Project Not Found
     </div>
     <v-container v-else fluid>
+      <MemberEditDialog
+        v-model="showingMemberEditDialog"
+        :members="members"
+        :id="id"
+        :project-id="id"
+        :owner="this.project.ownerId"
+        @action-done="updateMembers"
+        @transfer-project="projectTransferred"
+      >
+      </MemberEditDialog>
       <ProjectEditorDialog
         v-model="showingProjectEditDialog"
         mode="edit"
@@ -37,7 +47,7 @@
                 {{ project.name }}
               </p>
               <v-btn
-                v-if="isOwner"
+                v-if="isMember"
                 icon
                 class="ml-2"
                 @click="showingProjectEditDialog = true"
@@ -73,7 +83,13 @@
                       <p class="headline grey--text mb-0">
                         Members
                       </p>
-                      <v-btn v-if="isOwner" icon small class="ml-1">
+                      <v-btn
+                        v-if="isOwner || isAdmin"
+                        icon
+                        small
+                        class="ml-1"
+                        @click="showingMemberEditDialog = true"
+                      >
                         <v-icon>
                           mdi-settings
                         </v-icon>
@@ -104,7 +120,7 @@
                       <p class="headline grey--text mb-0">
                         Labels
                       </p>
-                      <v-btn v-if="isOwner" icon small class="ml-1">
+                      <v-btn v-if="isOwner || isAdmin" icon small class="ml-1">
                         <v-icon>
                           mdi-settings
                         </v-icon>
@@ -157,10 +173,15 @@ import Api from '@/api/Api'
 import { apiErrorHandler, getGravatarUrl } from '@/utils/util'
 import { app as AppModule, user as UserModule } from '@/store/modules'
 import ProjectEditorDialog from '@/components/project/ProjectEditorDialog.vue'
+import MemberEditDialog from '@/components/project/MemberEditDialog.vue'
 import IssueStatus from '../enums/IssueStatus'
 import ProjectPrivacy from '../enums/ProjectPrivacy'
 
 const api = Api.getInstance()
+
+interface Member extends User {
+  id: number
+}
 
 interface IssueInfo {
   title: string,
@@ -176,6 +197,7 @@ interface IssueInfo {
 @Component({
   components: {
     ProjectEditorDialog,
+    MemberEditDialog,
     TagField,
     IssueList
   }
@@ -183,21 +205,31 @@ interface IssueInfo {
 export default class ProjectView extends Vue {
   id: number | null = null
   project: Project | null = null
-  members: User[] = []
+  members: Member[] = []
   labels: Label[] = []
   issueIds: number[] = []
   issues: Issue[] = []
   issueInfos: IssueInfo[] = []
   showingProjectEditDialog: boolean = false
+  showingMemberEditDialog: boolean = false
 
   get isPrivate () {
     if (this.project === null) return false
     return this.project.privacy === ProjectPrivacy.Private
   }
 
+  get isAdmin () {
+    return UserModule.isAdmin
+  }
+
   get isOwner () {
     if (this.id === null || this.project === null) return false
     return UserModule.id === this.project.ownerId
+  }
+
+  get isMember () {
+    if (this.id === null || this.project === null) return false
+    return !!this.members.find(member => member.id === UserModule.id)
   }
 
   get createdDateString () {
@@ -278,8 +310,9 @@ export default class ProjectView extends Vue {
       next((vm: ProjectView) => {
         vm.id = targetId
         vm.project = targetProject
-        vm.members = targetMembers
+        vm.members = targetMembers.map((user, index) => ({ ...user, id: targetMemberIds[index] }))
         vm.labels = targetLabels
+        vm.updateIssues()
       })
     } catch (error) {
       apiErrorHandler(error)
@@ -307,13 +340,36 @@ export default class ProjectView extends Vue {
       ])
       this.id = targetId
       this.project = targetProject
-      this.members = targetMembers
+      this.members = targetMembers.map((user, index) => ({ ...user, id: targetMemberIds[index] }))
       this.labels = targetLabels
+      this.updateIssues()
       next()
     } catch (error) {
       apiErrorHandler(error)
       next()
     }
+    AppModule.setIsPageLoading(false)
+  }
+
+  async projectTransferred (username: string) {
+    if (this.project === null) return
+    AppModule.setIsPageLoading(true)
+    await this.$router.replace({
+      name: 'project',
+      params: {
+        username,
+        projectName: this.project.name
+      }
+    }).catch(() => {})
+    AppModule.setIsPageLoading(false)
+  }
+
+  async updateMembers () {
+    if (this.id === null) return
+    AppModule.setIsPageLoading(true)
+    const memberIds = await api.getProjectMembers(this.id)
+    const members = await Promise.all(memberIds.map(id => api.getUser(id)))
+    this.members = members.map((user, index) => ({ ...user, id: memberIds[index] }))
     AppModule.setIsPageLoading(false)
   }
 
@@ -329,10 +385,6 @@ export default class ProjectView extends Vue {
       }
     }).catch(() => {})
     AppModule.setIsPageLoading(false)
-  }
-
-  mounted () {
-    this.updateIssues()
   }
 }
 </script>

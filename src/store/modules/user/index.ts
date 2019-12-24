@@ -4,6 +4,7 @@ import { SET_ID, SET_KEEP_LOGIN, SET_LOGGED_IN, SET_PROFILE } from './mutationTy
 import { GetUser } from '@/api/dto'
 import Api from '@/api/Api'
 import md5 from 'js-md5'
+import UserPermission from '@/enums/UserPermission'
 
 const api = Api.getInstance()
 
@@ -20,6 +21,11 @@ class UserModule extends VuexModule {
     if (this.profile === null) return ''
     const hash = md5(this.profile.email)
     return `https://www.gravatar.com/avatar/${hash}`
+  }
+
+  get isAdmin () {
+    if (this.profile === null) return false
+    return this.profile.permission === UserPermission.Admin
   }
 
   @Mutation
