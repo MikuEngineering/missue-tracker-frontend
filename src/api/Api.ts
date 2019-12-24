@@ -338,7 +338,8 @@ export default class Api {
           400: () => new ApiError(ErrorCode.BadRequest, data),
           401: () => new ApiError(ErrorCode.UserUnauthorized, data),
           403: () => new ApiError(ErrorCode.UserPermissionDenied, data),
-          404: () => new ApiError(ErrorCode.UserOrProjectNotFound, data)
+          404: () => new ApiError(ErrorCode.UserOrProjectNotFound, data),
+          409: () => new ApiError(ErrorCode.UserConflict, data)
         }
         throw handlers[status]()
       })
