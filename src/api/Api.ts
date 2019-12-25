@@ -512,6 +512,14 @@ export default class Api {
 
   public async getIssueComments (issueId: number) {
     const response = await this.httpClient.get(`/issues/${issueId}/comments`)
+      .catch((response: AxiosResponse) => {
+        const { status, data } = response
+        const handlers: ErrorHandlers = {
+          400: () => new ApiError(ErrorCode.BadRequest, data),
+          404: () => new ApiError(ErrorCode.IssueNotFound, data)
+        }
+        throw handlers[status]()
+      })
     const data: dto.GetIssueComments = response.data
     return data.comments
   }
@@ -519,10 +527,27 @@ export default class Api {
   public async createIssueComment (params: { issueId: number, content: string }) {
     const { issueId, ...requestBody } = params
     await this.httpClient.post(`/issues/${issueId}/comments`, requestBody)
+      .catch((response: AxiosResponse) => {
+        const { status, data } = response
+        const handlers: ErrorHandlers = {
+          400: () => new ApiError(ErrorCode.BadRequest, data),
+          401: () => new ApiError(ErrorCode.UserUnauthorized, data),
+          404: () => new ApiError(ErrorCode.IssueNotFound, data)
+        }
+        throw handlers[status]()
+      })
   }
 
   public async getIssueComment (commentId: number) {
     const response = await this.httpClient.get(`/comments/${commentId}`)
+      .catch((response: AxiosResponse) => {
+        const { status, data } = response
+        const handlers: ErrorHandlers = {
+          400: () => new ApiError(ErrorCode.BadRequest, data),
+          404: () => new ApiError(ErrorCode.CommentNotFound, data)
+        }
+        throw handlers[status]()
+      })
     const data: dto.GetIssueComment = response.data
     return data
   }
@@ -530,10 +555,30 @@ export default class Api {
   public async updateIssueComment (params: { commentId: number, content: string }) {
     const { commentId, ...requestBody } = params
     await this.httpClient.put(`/comments/${commentId}`, requestBody)
+      .catch((response: AxiosResponse) => {
+        const { status, data } = response
+        const handlers: ErrorHandlers = {
+          400: () => new ApiError(ErrorCode.BadRequest, data),
+          401: () => new ApiError(ErrorCode.UserUnauthorized, data),
+          403: () => new ApiError(ErrorCode.UserPermissionDenied, data),
+          404: () => new ApiError(ErrorCode.CommentNotFound, data)
+        }
+        throw handlers[status]()
+      })
   }
 
   public async setIssueCommentStatus (params: { commentId: number, status: boolean }) {
     const { commentId, ...requestBody } = params
     await this.httpClient.put(`/comments/${commentId}/status`, requestBody)
+      .catch((response: AxiosResponse) => {
+        const { status, data } = response
+        const handlers: ErrorHandlers = {
+          400: () => new ApiError(ErrorCode.BadRequest, data),
+          401: () => new ApiError(ErrorCode.UserUnauthorized, data),
+          403: () => new ApiError(ErrorCode.UserPermissionDenied, data),
+          404: () => new ApiError(ErrorCode.CommentNotFound, data)
+        }
+        throw handlers[status]()
+      })
   }
 }

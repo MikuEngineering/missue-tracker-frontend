@@ -13,6 +13,7 @@ enum ErrorCode {
   LabelNotFound,
   LabelConlict,
   IssueNotFound,
+  CommentNotFound,
 }
 
 export default ErrorCode
