@@ -24,7 +24,7 @@
               two-line
               class="py-2"
               :class="`px-${$vuetify.breakpoint.xs ? 4 : 8}`"
-              @click="() => {}"
+              @click="goToIssue(issue.id)"
             >
               <v-row no-gutters class="my-2">
                 <v-col cols="12" sm="1">
@@ -81,6 +81,7 @@ import IssueStatus from '@/enums/IssueStatus'
 import { getGravatarUrl } from '@/utils/util'
 
 interface IssueInfo {
+  id: number
   title: string,
   number: number,
   status: IssueStatus
@@ -97,6 +98,16 @@ export default class IssueList extends Vue {
 
   getGravatarUrl (email: string) {
     return getGravatarUrl(email)
+  }
+
+  goToIssue (issueId: number) {
+    console.log(issueId)
+    this.$router.push({
+      name: 'issue',
+      params: {
+        issueId: `${issueId}`
+      }
+    })
   }
 
   get numOfOpenIssues () {

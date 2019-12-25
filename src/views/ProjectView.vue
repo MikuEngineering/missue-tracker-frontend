@@ -209,6 +209,7 @@ interface LabelInfo extends Label {
 }
 
 interface IssueInfo {
+  id: number,
   title: string,
   number: number,
   status: IssueStatus
@@ -409,7 +410,7 @@ export default class ProjectView extends Vue {
       AppModule.setIsPageLoading(true)
       this.issueIds = await api.getProjectIssues(this.id)
       this.issues = await Promise.all(this.issueIds.map(issueId => api.getProjectIssue(issueId)))
-      this.issueInfos = await Promise.all(this.issues.map(async issue => {
+      this.issueInfos = await Promise.all(this.issues.map(async (issue, index) => {
         const owner = await api.getUser(issue.owner)
         const assignees = await Promise.all(issue.assignees.map(async id => {
           const assignee = await api.getUser(id)
@@ -420,6 +421,7 @@ export default class ProjectView extends Vue {
           return label
         }))
         return {
+          id: this.issueIds[index],
           title: issue.title,
           number: issue.number,
           status: issue.status,
