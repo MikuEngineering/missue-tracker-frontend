@@ -452,7 +452,7 @@ export default class Api {
     return data.issues
   }
 
-  public async createProjectIssue (params: { projectId: number, title: string, comment: { content: string }, labels: number[], asignees: number[] }) {
+  public async createProjectIssue (params: { projectId: number, title: string, comment: { content: string }, labels: number[], assignees: number[] }) {
     const { projectId, ...requestBody } = params
     await this.httpClient.post(`/projects/${projectId}/issues`, requestBody)
       .catch((response: AxiosResponse) => {
@@ -481,7 +481,7 @@ export default class Api {
     return data
   }
 
-  public async updateProjectIssue (params: { issueId: number, title: string, labels: number[], asignees: number[] }) {
+  public async updateProjectIssue (params: { issueId: number, title: string, labels: number[], assignees: number[] }) {
     const { issueId, ...requestBody } = params
     await this.httpClient.put(`/issues/${issueId}`, requestBody)
       .catch((response: AxiosResponse) => {

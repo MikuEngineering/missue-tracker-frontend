@@ -1,4 +1,6 @@
 export { default as AuthView } from './AuthView.vue'
 export { default as HomeView } from './HomeView.vue'
 export { default as ProjectView } from './ProjectView.vue'
+export { default as IssueView } from './IssueView.vue'
+export { default as CreateIssueView } from './CreateIssueView.vue'
 export { default as ProfileView } from './ProfileView.vue'
