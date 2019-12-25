@@ -166,7 +166,14 @@
       </div>
       <div class="d-flex align-center">
         <p class="headline grey--text ma-0">Issues</p>
-        <v-btn color="warning" rounded outlined small class="ml-2">
+        <v-btn
+          color="warning"
+          rounded
+          outlined
+          small
+          class="ml-2"
+          @click="goToCreateIssue"
+        >
           <span>Add</span>
         </v-btn>
       </div>
@@ -273,6 +280,13 @@ export default class ProjectView extends Vue {
       params: {
         username
       }
+    })
+  }
+
+  goToCreateIssue () {
+    this.$router.push({
+      name: 'newissue',
+      params: this.$route.params
     })
   }
 

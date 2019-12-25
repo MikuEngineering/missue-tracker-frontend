@@ -17,6 +17,11 @@ const routes: RouteConfig[] = [
     component: views.AuthView
   },
   {
+    name: 'issue',
+    path: '/issues/:issueId',
+    component: views.IssueView
+  },
+  {
     name: 'home',
     path: '/',
     component: views.HomeView
@@ -30,6 +35,11 @@ const routes: RouteConfig[] = [
     name: 'project',
     path: '/:username/:projectName',
     component: views.ProjectView
+  },
+  {
+    name: 'newissue',
+    path: '/:username/:projectName/newissue',
+    component: views.CreateIssueView
   }
 ]
 
