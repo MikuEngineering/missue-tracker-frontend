@@ -7,5 +7,6 @@ export default interface GetUser {
   autobiography: string,
   email: string,
   status: UserStatus,
-  permission: UserPermission
+  permission: UserPermission,
+  lineToken: string
 }

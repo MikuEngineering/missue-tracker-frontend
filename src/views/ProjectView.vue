@@ -31,6 +31,7 @@
         mode="edit"
         :id="id"
         :project="project"
+        :deletable="isOwner || isAdmin"
         @action-done="updateProjectInfo"
         @change-project-name="projectNameChangeded"
       ></ProjectEditDialog>
