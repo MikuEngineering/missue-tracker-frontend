@@ -42,6 +42,17 @@
         </p>
         <p class="text-right">
           <v-btn
+            v-if="deletable"
+            :block="$vuetify.breakpoint.xs"
+            class="mr-2"
+            large
+            color="error"
+            @click="clickDelete"
+            :loading="loading"
+          >
+            <span>Delete</span>
+          </v-btn>
+          <v-btn
             :block="$vuetify.breakpoint.xs"
             large
             color="success"
@@ -84,6 +95,7 @@ export default class ProjectEditDialog extends Vue {
   @Prop() project!: Project
   @Prop() mode!: string
   @Prop() id!: number
+  @Prop() deletable!: boolean
   loading: boolean = false
   projectModel: Project = {
     name: '',
@@ -109,6 +121,19 @@ export default class ProjectEditDialog extends Vue {
   }
   set privacyBoolean (value: boolean) {
     this.projectModel.privacy = value ? ProjectPrivacy.Private : ProjectPrivacy.Public
+  }
+
+  async clickDelete () {
+    try {
+      this.loading = true
+      await api.deleteProject(this.id)
+      AppModule.addAlert({ type: 'success', message: 'Project Created Successfully' })
+      this.$router.push('/')
+      this.showingDialog = false
+    } catch (error) {
+      apiErrorHandler(error)
+    }
+    this.loading = false
   }
 
   async createProject () {

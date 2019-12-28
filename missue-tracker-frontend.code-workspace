@@ -8,16 +8,18 @@
     "recommendations": [
       "christian-kohler.npm-intellisense",
       "christian-kohler.path-intellisense",
+      "wix.vscode-import-cost",
+      "editorconfig.editorconfig",
       "dbaeumer.vscode-eslint",
+      "mrmlnc.vscode-scss",
+      "esbenp.prettier-vscode",
+      "octref.vetur",
       "formulahendry.auto-close-tag",
       "ionutvmi.path-autocomplete",
-      "joelday.docthis",
-      "naumovs.color-highlight",
-      "octref.vetur",
-      "mrmlnc.vscode-scss",
-      "wix.vscode-import-cost",
       "coenraads.bracket-pair-colorizer",
-      "esbenp.prettier-vscode"
+      "oderwat.indent-rainbow",
+      "naumovs.color-highlight",
+      "joelday.docthis"
     ]
   },
   "settings": {

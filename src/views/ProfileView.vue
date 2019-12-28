@@ -36,25 +36,71 @@
             >{{ isEditting ? "Done" : "Edit" }}</v-btn
           >
         </div>
+        <div v-if="isEditting" class="px-3" style="width: 70%;">
+          <v-text-field
+            v-model="editedProfile.nickname"
+            class="mb-2"
+            v-if="isEditting"
+            label="Nickname"
+            dense
+            outlined
+            hide-details
+            :disabled="isSavingProfile"
+          ></v-text-field>
+
+          <v-text-field
+            v-model="editedProfile.email"
+            class="mb-2"
+            label="Email"
+            dense
+            outlined
+            hide-details
+            :disabled="isSavingProfile"
+          ></v-text-field>
+
+          <v-text-field
+            v-if="!editedProfile.lineToken"
+            v-model="editedProfile.lineToken"
+            class="mb-2"
+            label="Line Token"
+            dense
+            outlined
+            hide-details
+            :disabled="isSavingProfile"
+          ></v-text-field>
+
+          <v-textarea
+            v-model="editedProfile.autobiography"
+            class="mb-2"
+            v-if="isEditting"
+            label="Autobiography"
+            auto-grow
+            no-resize
+            outlined
+            hide-details
+            rows="1"
+            :disabled="isSavingProfile"
+          ></v-textarea>
+        </div>
         <div
+          v-else
           class="d-flex flex-column justify-center align-center align-sm-start"
           :class="`px-${$vuetify.breakpoint.xs ? 0 : 8}`"
         >
           <div
             class="display-1 text-center d-flex flex-wrap flex-column flex-sm-row justify-center align-center"
           >
-            <v-text-field
-              v-model="editedProfile.nickname"
-              v-if="isEditting"
-              label="Nickname"
-              dense
-              outlined
-              hide-details
-              :disabled="isSavingProfile"
-            ></v-text-field>
-            <span v-else class="text-truncate" style="max-width: 220px;">
+            <span class="text-truncate" style="max-width: 220px;">
               {{ profile.nickname }}
             </span>
+            <v-chip
+              v-if="profile && profile.lineToken && !isEditting"
+              class="d-xs-block d-inline mx-2"
+              color="success"
+            >
+              Line Notification
+            </v-chip>
+
             <v-chip
               v-if="isAdmin && !isEditting"
               class="d-xs-block d-inline mx-2"
@@ -67,37 +113,12 @@
             {{ profile.username }}
           </div>
           <div class="pt-2">
-            <v-text-field
-              v-model="editedProfile.email"
-              v-if="isEditting"
-              label="Email"
-              dense
-              outlined
-              hide-details
-              :disabled="isSavingProfile"
-            ></v-text-field>
-            <a
-              v-else
-              :href="`mailto:${profile.email}`"
-              style="text-decoration: none;"
-            >
+            <a :href="`mailto:${profile.email}`" style="text-decoration: none;">
               {{ profile.email }}
             </a>
           </div>
           <div class="pt-2">
-            <v-textarea
-              v-model="editedProfile.autobiography"
-              v-if="isEditting"
-              label="Autobiography"
-              auto-grow
-              no-resize
-              outlined
-              hide-details
-              rows="1"
-              :disabled="isSavingProfile"
-            ></v-textarea>
             <div
-              v-else
               class="subtitle-1 grey--text lighten-5 text-center text-sm-start"
             >
               {{ profile.autobiography }}
@@ -134,10 +155,11 @@ export default class ProfileView extends Vue {
   isSavingProfile = false
   id: number | null = null
   profile: Profile | null = null
-  editedProfile: { nickname: string, email: string, autobiography: string } = {
+  editedProfile: { nickname: string, email: string, autobiography: string, lineToken: string } = {
     nickname: '',
     email: '',
-    autobiography: ''
+    autobiography: '',
+    lineToken: ''
   }
 
   get isUserNotFound () {
@@ -195,7 +217,8 @@ export default class ProfileView extends Vue {
       this.editedProfile = {
         nickname: this.profile.nickname,
         email: this.profile.email,
-        autobiography: this.profile.autobiography
+        autobiography: this.profile.autobiography,
+        lineToken: this.profile.lineToken
       }
       this.isEditting = true
     }
@@ -255,7 +278,7 @@ export default class ProfileView extends Vue {
     }
 
     .autobiography {
-      max-width: 400px;
+      max-width: 600px;
     }
   }
 }

@@ -74,6 +74,13 @@
       </v-col>
     </v-row>
     <v-divider></v-divider>
+    <IssueComment
+      v-for="(commentInfo, index) in commentInfos"
+      v-model="commentInfo.content"
+      :key="`comment-${index}`"
+      :is-editting="false"
+      :owner="commentInfo.owner"
+    ></IssueComment>
   </v-container>
 </template>
 
@@ -86,14 +93,15 @@ import { apiErrorHandler, getGravatarUrl } from '../utils/util'
 import { GetUser as User, GetProjectIssue as Issue, GetIssueComment as Comment, GetProjectLabel as Label } from '@/api/dto'
 import IssueStatus from '@/enums/IssueStatus'
 import { app as AppModule } from '@/store/modules'
+import IssueComment from '@/components/issue/IssueComment.vue'
 
 interface IssueInfo {
   id: number,
   title: string,
   number: number,
   status: IssueStatus
-  owner: User,
-  assignees: User[],
+  owner: UserInfo,
+  assignees: UserInfo[],
   labels: LabelInfo[],
   createdTime: Date,
 }
@@ -102,8 +110,12 @@ interface LabelInfo extends Label {
   id: number
 }
 
-interface CommentInfo extends Comment {
-  id: number
+interface CommentInfo {
+  id: number,
+  content: string,
+  owner: UserInfo,
+  createdTime: Date,
+  updatedTime: Date
 }
 
 interface UserInfo extends User {
@@ -143,7 +155,11 @@ async function getIssueInfo (issueId: number) {
 
 const api = Api.getInstance()
 
-@Component
+@Component({
+  components: {
+    IssueComment
+  }
+})
 export default class IssueView extends Vue {
   issueInfo: IssueInfo | null = null
   commentInfos: CommentInfo[] = []
@@ -175,8 +191,17 @@ export default class IssueView extends Vue {
     AppModule.setIsPageLoading(true)
     try {
       const commentIds = await api.getIssueComments(this.issueInfo.id)
-      this.commentInfos = this.commentInfos = (await Promise.all(commentIds.map(id => api.getIssueComment(id))))
-        .map((comment, index) => ({ ...comment, id: commentIds[index] }))
+      this.commentInfos = await Promise.all((await Promise.all(commentIds.map(id => api.getIssueComment(id))))
+        .map(async (comment, index) => ({
+          id: commentIds[index],
+          content: comment.content,
+          owner: {
+            id: comment.owner,
+            ...await api.getUser(comment.owner)
+          },
+          createdTime: new Date(comment.createdTime),
+          updatedTime: new Date(comment.updatedTime)
+        })))
     } catch (error) {
       apiErrorHandler(error)
     }
@@ -215,6 +240,6 @@ export default class IssueView extends Vue {
 
 <style lang="scss" scoped>
 .view-container {
-  max-width: 900px;
+  max-width: 800px;
 }
 </style>

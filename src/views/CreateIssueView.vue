@@ -5,39 +5,33 @@
     </v-overlay>
     <v-row>
       <v-col cols="12" sm="8">
-        <v-card class="pa-3">
-          <p class="display-1">Create Issue</p>
-          <p style="max-width: 400px;">
-            <v-text-field
-              v-model="title"
-              label="Title"
-              outlined
-              hide-details
-              dense
-            ></v-text-field>
-          </p>
-          <p>
-            <v-textarea
-              v-model="content"
-              label="First Comment"
-              outlined
-              hide-details
-              auto-grow
-              no-resize
-              rows="10"
-            ></v-textarea>
-          </p>
-          <p class="d-flex">
-            <v-spacer></v-spacer>
-            <v-btn
-              :block="$vuetify.breakpoint.xs"
-              color="success"
-              @click="createIssue"
-            >
-              Create
-            </v-btn>
-          </p>
-        </v-card>
+        <p class="display-1">Create Issue</p>
+        <p>
+          <v-text-field
+            v-model="title"
+            label="Title"
+            outlined
+            hide-details
+            dense
+          ></v-text-field>
+        </p>
+        <p>
+          <IssueComment
+            v-model="content"
+            :owner="owner"
+            :is-editting="true"
+          ></IssueComment>
+        </p>
+        <p class="d-flex">
+          <v-spacer></v-spacer>
+          <v-btn
+            :block="$vuetify.breakpoint.xs"
+            color="success"
+            @click="createIssue"
+          >
+            Create
+          </v-btn>
+        </p>
       </v-col>
       <v-col cols="12" sm="4">
         <v-card class="pa-3" max-height="300">
@@ -65,9 +59,10 @@ import Api from '@/api/Api'
 import { apiErrorHandler } from '../utils/util'
 import { Route } from 'vue-router'
 import { GetUser as User, GetProjectLabel as Label } from '@/api/dto'
-import { app as AppModule } from '@/store/modules'
+import { app as AppModule, user as UserModule } from '@/store/modules'
 import AssigneeList from '@/components/issue/AssigneeList.vue'
 import LabelList from '@/components/issue/LabelList.vue'
+import IssueComment from '@/components/issue/IssueComment.vue'
 
 const api = Api.getInstance()
 
@@ -82,7 +77,8 @@ interface LabelInfo extends Label {
 @Component({
   components: {
     AssigneeList,
-    LabelList
+    LabelList,
+    IssueComment
   }
 })
 export default class CreateIssueView extends Vue {
@@ -110,6 +106,13 @@ export default class CreateIssueView extends Vue {
 
   get selectedLabelIds () {
     return this.selectedLabelIndexes.map(index => this.labels[index].id)
+  }
+
+  get owner () {
+    return {
+      id: UserModule.id,
+      ...UserModule.profile
+    }
   }
 
   async createIssue () {

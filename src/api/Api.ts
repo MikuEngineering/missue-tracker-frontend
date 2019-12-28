@@ -155,12 +155,13 @@ export default class Api {
     return data.issues
   }
 
-  public async updateUser (params: { userId: number, nickname: string, email: string, autobiography: string }) {
-    const { userId, nickname, email, autobiography } = params
+  public async updateUser (params: { userId: number, nickname: string, email: string, autobiography: string, lineToken: string}) {
+    const { userId, nickname, email, autobiography, lineToken } = params
     await this.httpClient.put(`/users/${userId}`, {
       nickname,
       autobiography,
-      email
+      email,
+      lineToken
     })
       .catch((response: AxiosResponse) => {
         const { status, data } = response

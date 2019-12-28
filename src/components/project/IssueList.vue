@@ -101,7 +101,6 @@ export default class IssueList extends Vue {
   }
 
   goToIssue (issueId: number) {
-    console.log(issueId)
     this.$router.push({
       name: 'issue',
       params: {
