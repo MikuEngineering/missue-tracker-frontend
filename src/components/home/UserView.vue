@@ -23,14 +23,11 @@
 import Vue from 'vue'
 import { Component } from 'vue-property-decorator'
 import { GetProject as Project } from '@/api/dto'
-import { app as AppModule, user as UserModule } from '@/store/modules/'
+import AppModule from '@/store/modules/app'
 import ProjectEmptyView from './ProjectEmptyView.vue'
 import ProjectListView from './ProjectListView.vue'
 import ProjectEditDialog from '../project/ProjectEditDialog.vue'
-import { apiErrorHandler } from '@/utils/util'
-import Api from '../../api/Api'
-
-const api = Api.getInstance()
+import api from '../../api/api'
 
 @Component({
   components: {
@@ -53,14 +50,14 @@ export default class HomeView extends Vue {
   }
 
   async updateProjectIds () {
-    const id = UserModule.id
-    if (id === null) return
+    const user = AppModule.user
+    if (user === null) return
+    const id = user.id
     AppModule.setIsPageLoading(true)
     this.isLoadingProjectIds = true
     try {
       this.projectIds = await api.getUserProjectIds(id)
     } catch (error) {
-      apiErrorHandler(error)
     }
     this.isLoadingProjectIds = false
     AppModule.setIsPageLoading(false)

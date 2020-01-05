@@ -55,16 +55,13 @@
 <script lang="ts">
 import Vue from 'vue'
 import { Component } from 'vue-property-decorator'
-import Api from '@/api/Api'
-import { apiErrorHandler } from '../utils/util'
+import api from '@/api/api'
 import { Route } from 'vue-router'
 import { GetUser as User, GetProjectLabel as Label } from '@/api/dto'
-import { app as AppModule, user as UserModule } from '@/store/modules'
+import AppModule from '@/store/modules/app'
 import AssigneeList from '@/components/issue/AssigneeList.vue'
 import LabelList from '@/components/issue/LabelList.vue'
 import IssueComment from '@/components/issue/IssueComment.vue'
-
-const api = Api.getInstance()
 
 interface Member extends User {
   id: number
@@ -109,16 +106,13 @@ export default class CreateIssueView extends Vue {
   }
 
   get owner () {
-    return {
-      id: UserModule.id,
-      ...UserModule.profile
-    }
+    return AppModule.user
   }
 
   async createIssue () {
     this.loading = true
     try {
-      const projectId = await api.getProjectIdByOwnerNameAndProjectName(this.meta)
+      const projectId = await api.getProjectId(this.meta)
       await api.createProjectIssue({
         projectId,
         title: this.title,
@@ -134,7 +128,6 @@ export default class CreateIssueView extends Vue {
         params: this.$route.params
       })
     } catch (error) {
-      apiErrorHandler(error)
     }
     this.loading = false
   }
@@ -142,15 +135,15 @@ export default class CreateIssueView extends Vue {
   async beforeRouteEnter (to: Route, from: Route, next: Function) {
     AppModule.setIsPageLoading(true)
     try {
-      const projectId = await api.getProjectIdByOwnerNameAndProjectName({
+      const projectId = await api.getProjectId({
         ownerUsername: to.params.username,
         projectName: to.params.projectName
       })
-      const memberIds = await api.getProjectMembers(projectId)
-      const members = (await Promise.all(memberIds.map(id => api.getUser(id))))
+      const memberIds = await api.getProjectMemberIds(projectId)
+      const members = (await Promise.all(memberIds.map(id => api.getUserById(id))))
         .map((member, index) => ({ ...member, id: memberIds[index] }))
 
-      const labelIds = await api.getProjectLabels(projectId)
+      const labelIds = await api.getProjectLabelIds(projectId)
       const labels = (await Promise.all(labelIds.map(id => api.getProjectLabel(id))))
         .map((label, index) => ({ ...label, id: labelIds[index] }))
       await next((vm: CreateIssueView) => {
@@ -159,7 +152,6 @@ export default class CreateIssueView extends Vue {
       })
       AppModule.setIsPageLoading(false)
     } catch (error) {
-      apiErrorHandler(error)
       await next()
       AppModule.setIsPageLoading(false)
     }

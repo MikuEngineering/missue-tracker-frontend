@@ -48,12 +48,8 @@ import ProjectCard from '@/components/home/ProjectCard.vue'
 import AddProjectCardContent from '@/components/home/AddProjectCardContent.vue'
 import ProjectInfoCardContent from '@/components/home/ProjectInfoCardContent.vue'
 import AppModule from '@/store/modules/app'
-import UserModule from '@/store/modules/user'
 import { GetProject as Project } from '@/api/dto'
-import { apiErrorHandler } from '@/utils/util'
-import Api from '../../api/Api'
-
-const api = Api.getInstance()
+import api from '../../api/api'
 
 interface ProjectInfo extends Project {
   ownerUsername: string
@@ -104,7 +100,7 @@ export default class ProjectListView extends Vue {
     try {
       const projects = await Promise.all(this.projectIds.map(projectId => api.getProject(projectId)))
       this._projectInfos = await Promise.all(projects.map(async project => {
-        const { username: ownerUsername } = await api.getUser(project.ownerId)
+        const { username: ownerUsername } = await api.getUserById(project.ownerId)
         const projectInfo: ProjectInfo = {
           ...project,
           ownerUsername
@@ -112,7 +108,6 @@ export default class ProjectListView extends Vue {
         return projectInfo
       }))
     } catch (error) {
-      apiErrorHandler(error)
     }
     this.isLoadingProjects = false
     AppModule.setIsPageLoading(false)

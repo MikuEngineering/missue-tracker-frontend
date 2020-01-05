@@ -1,22 +1,9 @@
-import UserModule from '@/store/modules/user'
+import AppModule from '@/store/modules/app'
 import { NavigationGuard } from 'vue-router'
 
 export const sessionValidation: NavigationGuard = async (to, from, next) => {
-  const username: string | null = localStorage.getItem('username')
-  await UserModule.validateSession()
-  if (UserModule.isLoggedIn) {
-    if (username === null) {
-      await UserModule.logout()
-      next()
-      return
-    }
-    if (UserModule.id === null) {
-      await UserModule.afterLoggedIn(username)
-    }
-    next()
-  } else {
-    next()
-  }
+  await AppModule.validateSession()
+  next()
 }
 
 export const unauthorizedRequired: NavigationGuard = async (to, from, next) => {
@@ -25,7 +12,7 @@ export const unauthorizedRequired: NavigationGuard = async (to, from, next) => {
     return
   }
 
-  if (UserModule.isLoggedIn) {
+  if (AppModule.isLoggedIn) {
     next({ name: 'home' })
   } else {
     next()
@@ -38,7 +25,7 @@ export const authorizedRequired: NavigationGuard = async (to, from, next) => {
     return
   }
 
-  if (UserModule.isLoggedIn) {
+  if (AppModule.isLoggedIn) {
     next()
   } else {
     next({ name: 'auth' })

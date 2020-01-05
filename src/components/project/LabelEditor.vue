@@ -10,14 +10,12 @@
           label="Name"
         ></v-text-field>
       </v-col>
-      <v-col class="d-none d-sm-block pa-0" cols="12" sm="6"></v-col>
-      <v-col cols="12" sm="8" class="py-1">
+      <v-col cols="12" class="py-1">
         <v-textarea
           v-model="label.description"
           outlined
           hide-details
-          dense
-          rows="1"
+          rows="5"
           auto-grow
           no-resize
           label="Description"

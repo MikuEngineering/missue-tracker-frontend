@@ -110,11 +110,8 @@ import Vue from 'vue'
 import { Component, Prop, Emit, Watch } from 'vue-property-decorator'
 import AppModule from '@/store/modules/app'
 import { GetProjectLabel as Label } from '@/api/dto'
-import Api from '@/api/Api'
-import { apiErrorHandler } from '@/utils/util'
+import api from '@/api/api'
 import LabelEditor from '@/components/project/LabelEditor.vue'
-
-const api = Api.getInstance()
 
 interface LabelInfo extends Label {
   id: number
@@ -205,7 +202,6 @@ export default class LabelEditDialog extends Vue {
         })
         this.actionDone()
       } catch (error) {
-        apiErrorHandler(error)
       }
       this.loading = false
     } else if (this.isAddMode) {
@@ -217,7 +213,6 @@ export default class LabelEditDialog extends Vue {
         })
         this.actionDone()
       } catch (error) {
-        apiErrorHandler(error)
       }
       this.loading = false
     } else {
@@ -227,7 +222,6 @@ export default class LabelEditDialog extends Vue {
         await api.deleteProjectLabel(this.labels[this.selectedIndex].id)
         this.actionDone()
       } catch (error) {
-        apiErrorHandler(error)
       }
       this.loading = false
     }
