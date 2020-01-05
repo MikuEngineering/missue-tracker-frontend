@@ -8,7 +8,7 @@ import Vue from 'vue'
 import { Component } from 'vue-property-decorator'
 import GuestView from '@/components/home/GuestView.vue'
 import UserView from '@/components/home/UserView.vue'
-import UserModule from '@/store/modules/user'
+import AppModule from '@/store/modules/app'
 
 @Component({
   components: {
@@ -18,7 +18,7 @@ import UserModule from '@/store/modules/user'
 })
 export default class HomeView extends Vue {
   get isGuest () {
-    return !UserModule.isLoggedIn
+    return !AppModule.isLoggedIn
   }
 }
 </script>

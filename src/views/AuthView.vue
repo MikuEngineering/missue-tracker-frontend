@@ -45,9 +45,9 @@
 import Vue from 'vue'
 import AuthCard, { ViewModel as AuthCardViewModel } from '@/components/auth/AuthCard.vue'
 import { Component, Watch } from 'vue-property-decorator'
-import { app as AppModule, user as UserModule } from '@/store/modules'
-import { ApiError, BadRequestResponse, OtherClientErrorResponse } from '../api/Api'
-import ErrorCode from '../enums/ErrorCode'
+import AppModule from '@/store/modules/app'
+import { BadRequestResponse, OtherClientErrorResponse } from '../api/api'
+import { AxiosError } from 'axios'
 
 function generateLoginViewModel () {
   return {
@@ -114,30 +114,31 @@ export default class AuthView extends Vue {
     try {
       const { username, password, keepLogin: isKeepLogin } = this.loginViewModel
       this.loginViewModel.isDataTransferring = true
-      await UserModule.login({ username, password, isKeepLogin })
+      await AppModule.login({ username, password, isKeepLogin })
       this.$router.push({ name: 'home' })
       this.authCardViewModel.loginViewModel = generateLoginViewModel()
     } catch (error) {
       this.loginViewModel.isDataTransferring = false
-      if (!(error instanceof ApiError)) throw error
-      const apiError: ApiError = error
+      const err: AxiosError = error
 
-      if (apiError.code === ErrorCode.BadRequest) {
-        const data: BadRequestResponse = apiError.data
-        this.loginViewModel.failures = data.errors.map(e => {
-          return {
-            field: e.field,
-            message: e.message
-          }
-        })
-      } else {
-        const data: OtherClientErrorResponse = apiError.data
-        const fields = ['username', 'password']
-        this.loginViewModel.failures = fields.map(field => ({
-          field,
-          message: data.message
-        }))
-        AppModule.addAlert({ type: 'error', message: data.message })
+      if (err.response && err.response.status && err.response.data) {
+        if (err.response.status === 400) {
+          const data: BadRequestResponse = err.response.data
+          this.loginViewModel.failures = data.errors.map(e => {
+            return {
+              field: e.field,
+              message: e.message
+            }
+          })
+        } else {
+          const data: OtherClientErrorResponse = err.response.data
+          const fields = ['username', 'password']
+          this.loginViewModel.failures = fields.map(field => ({
+            field,
+            message: data.message
+          }))
+          AppModule.addAlert({ type: 'error', message: data.message })
+        }
       }
     }
   }
@@ -146,30 +147,31 @@ export default class AuthView extends Vue {
     try {
       const { username, password } = this.registerViewModel
       this.registerViewModel.isDataTransferring = true
-      await UserModule.register({ username, password })
+      await AppModule.register({ username, password })
       this.authCardViewModel.currentTab = 'tab-login'
       this.authCardViewModel.registerViewModel = generateRegisterViewModel()
     } catch (error) {
       this.registerViewModel.isDataTransferring = false
-      if (!(error instanceof ApiError)) throw error
-      const apiError: ApiError = error
+      const err: AxiosError = error
 
-      if (apiError.code === ErrorCode.BadRequest) {
-        const data: BadRequestResponse = apiError.data
-        this.registerViewModel.failures = data.errors.map(e => {
-          return {
-            field: e.field,
-            message: e.message
-          }
-        })
-      } else {
-        const data: OtherClientErrorResponse = apiError.data
-        const fields = ['username', 'password', 'passwordConfirm']
-        this.registerViewModel.failures = fields.map(field => ({
-          field,
-          message: data.message
-        }))
-        AppModule.addAlert({ type: 'error', message: data.message })
+      if (err.response && err.response.status && err.response.data) {
+        if (err.response.status === 400) {
+          const data: BadRequestResponse = err.response.data
+          this.loginViewModel.failures = data.errors.map(e => {
+            return {
+              field: e.field,
+              message: e.message
+            }
+          })
+        } else {
+          const data: OtherClientErrorResponse = err.response.data
+          const fields = ['username', 'password']
+          this.loginViewModel.failures = fields.map(field => ({
+            field,
+            message: data.message
+          }))
+          AppModule.addAlert({ type: 'error', message: data.message })
+        }
       }
     }
   }

@@ -81,27 +81,47 @@
       :is-editting="false"
       :owner="commentInfo.owner"
     ></IssueComment>
+
+    <div v-if="isLoggedIn">
+      <IssueComment
+        v-if="user"
+        v-model="newComment"
+        :is-editting="true"
+        :owner="user"
+      ></IssueComment>
+      <div class="d-flex">
+        <v-btn
+          class="ml-auto"
+          color="success"
+          :disabled="newComment.length === 0 || isCreatingComment"
+          @click="createComment"
+        >
+          New Comment
+        </v-btn>
+      </div>
+    </div>
   </v-container>
 </template>
 
 <script lang="ts">
 import Vue from 'vue'
 import { Component } from 'vue-property-decorator'
-import Api from '@/api/Api'
+import api from '@/api/api'
 import { Route } from 'vue-router'
-import { apiErrorHandler, getGravatarUrl } from '../utils/util'
-import { GetUser as User, GetProjectIssue as Issue, GetIssueComment as Comment, GetProjectLabel as Label } from '@/api/dto'
+import { getGravatarUrl } from '../utils/util'
+import { GetProjectIssue as Issue, GetIssueComment as Comment, GetProjectLabel as Label } from '@/api/dto'
 import IssueStatus from '@/enums/IssueStatus'
-import { app as AppModule } from '@/store/modules'
+import AppModule from '@/store/modules/app'
 import IssueComment from '@/components/issue/IssueComment.vue'
+import User from '@/interfaces/User'
 
 interface IssueInfo {
   id: number,
   title: string,
   number: number,
   status: IssueStatus
-  owner: UserInfo,
-  assignees: UserInfo[],
+  owner: User,
+  assignees: User[],
   labels: LabelInfo[],
   createdTime: Date,
 }
@@ -113,25 +133,21 @@ interface LabelInfo extends Label {
 interface CommentInfo {
   id: number,
   content: string,
-  owner: UserInfo,
+  owner: User,
   createdTime: Date,
   updatedTime: Date
 }
 
-interface UserInfo extends User {
-  id: number
-}
-
 async function getIssueInfo (issueId: number) {
   const issue = await api.getProjectIssue(issueId)
-  const owner: UserInfo = {
+  const owner: User = {
     id: issue.owner,
-    ...await api.getUser(issue.owner)
+    ...await api.getUserById(issue.owner)
   }
-  const assignees: UserInfo[] = await Promise.all(issue.assignees.map(async id => {
+  const assignees: User[] = await Promise.all(issue.assignees.map(async id => {
     return {
       id,
-      ...await api.getUser(id)
+      ...await api.getUserById(id)
     }
   }))
   const labels: LabelInfo[] = await Promise.all(issue.labels.map(async id => {
@@ -153,8 +169,6 @@ async function getIssueInfo (issueId: number) {
   return issueInfo
 }
 
-const api = Api.getInstance()
-
 @Component({
   components: {
     IssueComment
@@ -163,6 +177,8 @@ const api = Api.getInstance()
 export default class IssueView extends Vue {
   issueInfo: IssueInfo | null = null
   commentInfos: CommentInfo[] = []
+  newComment: string = ''
+  isCreatingComment: boolean = false
 
   get isIssueNotFound () {
     return this.issueInfo === null
@@ -171,6 +187,26 @@ export default class IssueView extends Vue {
   get isOpen () {
     if (this.issueInfo === null) return false
     return this.issueInfo.status === IssueStatus.Open
+  }
+
+  get user () {
+    return AppModule.user
+  }
+
+  get isLoggedIn () {
+    return AppModule.isLoggedIn
+  }
+
+  async createComment () {
+    if (this.issueInfo === null) return
+    this.isCreatingComment = true
+    await api.createIssueComment({
+      issueId: this.issueInfo.id,
+      content: this.newComment
+    })
+    await this.updateComments()
+    this.newComment = ''
+    this.isCreatingComment = false
   }
 
   getGravatarUrl (email: string) {
@@ -190,20 +226,19 @@ export default class IssueView extends Vue {
     if (this.issueInfo === null) return
     AppModule.setIsPageLoading(true)
     try {
-      const commentIds = await api.getIssueComments(this.issueInfo.id)
+      const commentIds = await api.getIssueCommentIds(this.issueInfo.id)
       this.commentInfos = await Promise.all((await Promise.all(commentIds.map(id => api.getIssueComment(id))))
         .map(async (comment, index) => ({
           id: commentIds[index],
           content: comment.content,
           owner: {
             id: comment.owner,
-            ...await api.getUser(comment.owner)
+            ...await api.getUserById(comment.owner)
           },
           createdTime: new Date(comment.createdTime),
           updatedTime: new Date(comment.updatedTime)
         })))
     } catch (error) {
-      apiErrorHandler(error)
     }
     AppModule.setIsPageLoading(false)
   }
@@ -218,7 +253,6 @@ export default class IssueView extends Vue {
         vm.updateComments()
       })
     } catch (error) {
-      apiErrorHandler(error)
     }
     AppModule.setIsPageLoading(false)
   }
@@ -231,7 +265,6 @@ export default class IssueView extends Vue {
       this.issueInfo = issueInfo
       this.updateComments()
     } catch (error) {
-      apiErrorHandler(error)
     }
     AppModule.setIsPageLoading(false)
   }

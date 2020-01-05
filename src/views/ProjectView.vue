@@ -190,16 +190,14 @@ import { Route } from 'vue-router'
 import TagField from '@/components/project/TagField.vue'
 import IssueList from '@/components/project/IssueList.vue'
 import { GetProject as Project, GetProjectLabel as Label, GetProjectIssue as Issue, GetUser as User } from '@/api/dto'
-import Api from '@/api/Api'
-import { apiErrorHandler, getGravatarUrl } from '@/utils/util'
-import { app as AppModule, user as UserModule } from '@/store/modules'
+import api from '@/api/api'
+import { getGravatarUrl } from '@/utils/util'
+import AppModule from '@/store/modules/app'
 import ProjectEditDialog from '@/components/project/ProjectEditDialog.vue'
 import MemberEditDialog from '@/components/project/MemberEditDialog.vue'
 import LabelEditDialog from '@/components/project/LabelEditDialog.vue'
 import IssueStatus from '../enums/IssueStatus'
 import ProjectPrivacy from '../enums/ProjectPrivacy'
-
-const api = Api.getInstance()
 
 interface Member extends User {
   id: number
@@ -248,17 +246,18 @@ export default class ProjectView extends Vue {
   }
 
   get isAdmin () {
-    return UserModule.isAdmin
+    return AppModule.isAdmin
   }
 
   get isOwner () {
-    if (this.id === null || this.project === null) return false
-    return UserModule.id === this.project.ownerId
+    if (this.id === null || this.project === null || AppModule.user === null) return false
+    return AppModule.user.id === this.project.ownerId
   }
 
   get isMember () {
-    if (this.id === null || this.project === null) return false
-    return !!this.members.find(member => member.id === UserModule.id)
+    if (this.id === null || this.project === null || AppModule.user === null) return false
+    const id = AppModule.user.id
+    return !!this.members.find(member => member.id === id)
   }
 
   get createdDateString () {
@@ -296,17 +295,17 @@ export default class ProjectView extends Vue {
     AppModule.setIsPageLoading(true)
     const { username: ownerUsername, projectName } = to.params
     try {
-      const targetId = await api.getProjectIdByOwnerNameAndProjectName({
+      const targetId = await api.getProjectId({
         ownerUsername,
         projectName
       })
       const [targetProject, targetMemberIds, targetLabelIds] = await Promise.all([
         api.getProject(targetId),
-        api.getProjectMembers(targetId),
-        api.getProjectLabels(targetId)
+        api.getProjectMemberIds(targetId),
+        api.getProjectLabelIds(targetId)
       ])
       const [targetMembers, targetLabels] = await Promise.all([
-        Promise.all(targetMemberIds.map(id => api.getUser(id))),
+        Promise.all(targetMemberIds.map(id => api.getUserById(id))),
         Promise.all(targetLabelIds.map(id => api.getProjectLabel(id)))
       ])
       next((vm: ProjectView) => {
@@ -317,7 +316,6 @@ export default class ProjectView extends Vue {
         vm.updateIssues()
       })
     } catch (error) {
-      apiErrorHandler(error)
       next()
     }
     AppModule.setIsPageLoading(false)
@@ -327,17 +325,17 @@ export default class ProjectView extends Vue {
     AppModule.setIsPageLoading(true)
     const { username: ownerUsername, projectName } = to.params
     try {
-      const targetId = await api.getProjectIdByOwnerNameAndProjectName({
+      const targetId = await api.getProjectId({
         ownerUsername,
         projectName
       })
       const [targetProject, targetMemberIds, targetLabelIds] = await Promise.all([
         api.getProject(targetId),
-        api.getProjectMembers(targetId),
-        api.getProjectLabels(targetId)
+        api.getProjectMemberIds(targetId),
+        api.getProjectLabelIds(targetId)
       ])
       const [targetMembers, targetLabels] = await Promise.all([
-        Promise.all(targetMemberIds.map(id => api.getUser(id))),
+        Promise.all(targetMemberIds.map(id => api.getUserById(id))),
         Promise.all(targetLabelIds.map(id => api.getProjectLabel(id)))
       ])
       this.id = targetId
@@ -347,7 +345,6 @@ export default class ProjectView extends Vue {
       this.updateIssues()
       next()
     } catch (error) {
-      apiErrorHandler(error)
       next()
     }
     AppModule.setIsPageLoading(false)
@@ -388,8 +385,8 @@ export default class ProjectView extends Vue {
   async updateMembers () {
     if (this.id === null) return
     AppModule.setIsPageLoading(true)
-    const memberIds = await api.getProjectMembers(this.id)
-    const members = await Promise.all(memberIds.map(id => api.getUser(id)))
+    const memberIds = await api.getProjectMemberIds(this.id)
+    const members = await Promise.all(memberIds.map(id => api.getUserById(id)))
     this.members = members.map((user, index) => ({ ...user, id: memberIds[index] }))
     AppModule.setIsPageLoading(false)
   }
@@ -397,7 +394,7 @@ export default class ProjectView extends Vue {
   async updateLabels () {
     if (this.id === null) return
     AppModule.setIsPageLoading(true)
-    const labelIds = await api.getProjectLabels(this.id)
+    const labelIds = await api.getProjectLabelIds(this.id)
     const labels = await Promise.all(labelIds.map(id => api.getProjectLabel(id)))
     this.labels = labels.map((label, index) => ({ ...label, id: labelIds[index] }))
     AppModule.setIsPageLoading(false)
@@ -409,12 +406,12 @@ export default class ProjectView extends Vue {
     if (this.id === null) return
     try {
       AppModule.setIsPageLoading(true)
-      this.issueIds = await api.getProjectIssues(this.id)
+      this.issueIds = await api.getProjectIssueIds(this.id)
       this.issues = await Promise.all(this.issueIds.map(issueId => api.getProjectIssue(issueId)))
       this.issueInfos = await Promise.all(this.issues.map(async (issue, index) => {
-        const owner = await api.getUser(issue.owner)
+        const owner = await api.getUserById(issue.owner)
         const assignees = await Promise.all(issue.assignees.map(async id => {
-          const assignee = await api.getUser(id)
+          const assignee = await api.getUserById(id)
           return assignee
         }))
         const labels = await Promise.all(issue.labels.map(async id => {
@@ -435,7 +432,6 @@ export default class ProjectView extends Vue {
       }))
       AppModule.setIsPageLoading(false)
     } catch (error) {
-      apiErrorHandler(error)
     }
   }
 }

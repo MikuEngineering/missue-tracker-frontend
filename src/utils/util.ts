@@ -1,6 +1,3 @@
-import { ApiError, BadRequestResponse, OtherClientErrorResponse } from '@/api/Api'
-import ErrorCode from '@/enums/ErrorCode'
-import AppModule from '@/store/modules/app'
 import IssueStatus from '@/enums/IssueStatus'
 import md5 from 'js-md5'
 
@@ -42,20 +39,6 @@ export async function mockGetIssueInfo (issueId: number) {
     status: Math.floor(Math.random() * 2) ? IssueStatus.Open : IssueStatus.Closed,
     createdTime: new Date().toJSON(),
     updatedTime: new Date().toJSON()
-  }
-}
-
-export function apiErrorHandler (error: Error) {
-  if (!(error instanceof ApiError)) throw error
-
-  const apiError: ApiError = error
-
-  if (apiError.code === ErrorCode.BadRequest) {
-    const data: BadRequestResponse = apiError.data
-    data.errors.forEach(err => AppModule.addAlert({ type: 'error', message: err.message }))
-  } else {
-    const data: OtherClientErrorResponse = apiError.data
-    AppModule.addAlert({ type: 'error', message: data.message })
   }
 }
 

@@ -17,7 +17,8 @@
 import Vue from 'vue'
 import { Component } from 'vue-property-decorator'
 import { getModule } from 'vuex-module-decorators'
-import AppModule, { Alert } from '@/store/modules/app'
+import AppModule from '@/store/modules/app'
+import Alert from '@/interfaces/Alert'
 
 @Component
 export default class AlertGroup extends Vue {

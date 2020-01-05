@@ -58,7 +58,7 @@
 <script lang="ts">
 import Vue from 'vue'
 import { Component } from 'vue-property-decorator'
-import UserModule from '@/store/modules/user'
+import AppModule from '@/store/modules/app'
 import SearchField from '@/components/shared/SearchField.vue'
 
 @Component({
@@ -70,21 +70,21 @@ export default class Navbar extends Vue {
   toSearch: string = ''
 
   get avatarUrl () {
-    return UserModule.gravatarImgUrl
+    return AppModule.gravatarImgUrl
   }
 
   get nickname () {
-    if (UserModule.profile === null) return ''
-    return UserModule.profile.nickname
+    if (AppModule.user === null) return ''
+    return AppModule.user.nickname
   }
 
   get username () {
-    if (UserModule.profile === null) return ''
-    return UserModule.profile.username
+    if (AppModule.user === null) return ''
+    return AppModule.user.username
   }
 
   get isGuest () {
-    return !UserModule.isLoggedIn
+    return !AppModule.isLoggedIn
   }
 
   get showSearchFieldInToolbarExtensionSlot () {
@@ -104,7 +104,7 @@ export default class Navbar extends Vue {
   }
 
   async logout () {
-    await UserModule.logout()
+    await AppModule.logout()
     this.goToHomePage()
   }
 }

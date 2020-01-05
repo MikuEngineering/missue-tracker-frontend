@@ -92,10 +92,8 @@ import Vue from 'vue'
 import { Component, Prop, Emit, Watch } from 'vue-property-decorator'
 import AppModule from '@/store/modules/app'
 import { GetUser as User } from '@/api/dto'
-import Api from '@/api/Api'
-import { apiErrorHandler, getGravatarUrl } from '@/utils/util'
-
-const api = Api.getInstance()
+import api from '@/api/api'
+import { getGravatarUrl } from '@/utils/util'
 
 interface Member extends User {
   id: number
@@ -155,7 +153,7 @@ export default class MemberEditDialog extends Vue {
     } else {
       this.loading = true
       try {
-        const userId = await api.getUserIdByUsername(username)
+        const userId = await api.getUserId(username)
         const projectId = this.projectId
         const actions = {
           [Mode.Transfer]: async () => {
@@ -173,7 +171,6 @@ export default class MemberEditDialog extends Vue {
         }
         await actions[this.currentMode]()
       } catch (error) {
-        apiErrorHandler(error)
       }
       this.loading = false
     }

@@ -91,10 +91,10 @@
             class="display-1 text-center d-flex flex-wrap flex-column flex-sm-row justify-center align-center"
           >
             <span class="text-truncate" style="max-width: 220px;">
-              {{ profile.nickname }}
+              {{ user.nickname }}
             </span>
             <v-chip
-              v-if="profile && profile.lineToken && !isEditting"
+              v-if="user && user.lineToken && !isEditting"
               class="d-xs-block d-inline mx-2"
               color="success"
             >
@@ -110,18 +110,18 @@
             </v-chip>
           </div>
           <div v-if="!isEditting" class="headline grey--text lighten-3">
-            {{ profile.username }}
+            {{ user.username }}
           </div>
           <div class="pt-2">
-            <a :href="`mailto:${profile.email}`" style="text-decoration: none;">
-              {{ profile.email }}
+            <a :href="`mailto:${user.email}`" style="text-decoration: none;">
+              {{ user.email }}
             </a>
           </div>
           <div class="pt-2">
             <div
               class="subtitle-1 grey--text lighten-5 text-center text-sm-start"
             >
-              {{ profile.autobiography }}
+              {{ user.autobiography }}
             </div>
           </div>
         </div>
@@ -139,22 +139,18 @@ import md5 from 'js-md5'
 import Vue from 'vue'
 import { Component } from 'vue-property-decorator'
 import DefaultLayout from '@/layouts/DefaultLayout.vue'
-import { GetUser as Profile } from '@/api/dto'
 import { Route } from 'vue-router'
-import Api, { ApiError, BadRequestResponse, OtherClientErrorResponse } from '../api/Api'
-import { app as AppModule, user as UserModule } from '@/store/modules/'
-import UserPermission from '@/enums/UserPermission'
+import api from '../api/api'
+import { getGravatarUrl } from '@/utils/util'
+import AppModule from '@/store/modules/app'
 import UserStatus from '@/enums/UserStatus'
-import ErrorCode from '@/enums/ErrorCode'
-
-const api = Api.getInstance()
+import User from '../interfaces/User'
 
 @Component
 export default class ProfileView extends Vue {
   isEditting = false
   isSavingProfile = false
-  id: number | null = null
-  profile: Profile | null = null
+  user: User | null = null
   editedProfile: { nickname: string, email: string, autobiography: string, lineToken: string } = {
     nickname: '',
     email: '',
@@ -163,16 +159,16 @@ export default class ProfileView extends Vue {
   }
 
   get isUserNotFound () {
-    return this.id === null
+    return this.user === null
   }
 
   get isSelf () {
-    return UserModule.id === this.id
+    if (this.user === null || AppModule.user === null) return false
+    return AppModule.user.id === this.user.id
   }
 
   get isAdmin () {
-    if (this.profile === null) return false
-    return this.profile.permission === UserPermission.Admin
+    return AppModule.isAdmin
   }
 
   get usernameUri () {
@@ -180,45 +176,34 @@ export default class ProfileView extends Vue {
   }
 
   get userAvatarUrl () {
-    if (this.profile === null) return ''
-    const hash = md5(this.profile.email)
-    return `https://www.gravatar.com/avatar/${hash}?s=256`
+    if (this.user === null) return ''
+    return getGravatarUrl(this.user.email)
   }
 
   async toggleEdit () {
-    if (this.id === null || this.profile === null) return
+    if (this.user === null) return
 
     if (this.isEditting) {
       this.isSavingProfile = true
       try {
         await api.updateUser({
-          userId: this.id,
+          userId: this.user.id,
           ...this.editedProfile
         })
-        await UserModule.afterLoggedIn(this.profile.username)
-        this.profile.nickname = this.editedProfile.nickname
-        this.profile.email = this.editedProfile.email
-        this.profile.autobiography = this.editedProfile.autobiography
+        await AppModule.afterLoggedIn(this.user.username)
+        this.user.nickname = this.editedProfile.nickname
+        this.user.email = this.editedProfile.email
+        this.user.autobiography = this.editedProfile.autobiography
         this.isEditting = false
       } catch (error) {
-        if (!(error instanceof ApiError)) throw error
-        const apiError: ApiError = error
-
-        if (apiError.code === ErrorCode.BadRequest) {
-          const data: BadRequestResponse = apiError.data
-          data.errors.forEach(err => AppModule.addAlert({ type: 'error', message: err.message }))
-        } else {
-          const data: OtherClientErrorResponse = apiError.data
-          AppModule.addAlert({ type: 'error', message: data.message })
-        }
       }
       this.isSavingProfile = false
     } else {
       this.editedProfile = {
-        nickname: this.profile.nickname,
-        email: this.profile.email,
-        autobiography: this.profile.autobiography,
-        lineToken: this.profile.lineToken
+        nickname: this.user.nickname,
+        email: this.user.email,
+        autobiography: this.user.autobiography,
+        lineToken: this.user.lineToken
       }
       this.isEditting = true
     }
@@ -228,17 +213,11 @@ export default class ProfileView extends Vue {
     AppModule.setIsPageLoading(true)
     const targetUsername = to.params.username
     try {
-      const targetId = await api.getUserIdByUsername(targetUsername)
-      const targetProfile = await api.getUser(targetId)
+      const targetUser = await api.getUserByUsername(targetUsername).catch(() => null)
       next((vm: ProfileView) => {
-        vm.id = targetId
-        vm.profile = targetProfile
+        vm.user = targetUser
       })
     } catch (error) {
-      if (!(error instanceof ApiError)) throw error
-      const apiError: ApiError = error
-      const data: OtherClientErrorResponse = apiError.data
-      AppModule.addAlert({ type: 'error', message: data.message })
       next()
     }
     AppModule.setIsPageLoading(false)
@@ -248,16 +227,10 @@ export default class ProfileView extends Vue {
     AppModule.setIsPageLoading(true)
     const targetUsername = to.params.username
     try {
-      const targetId = await api.getUserIdByUsername(targetUsername)
-      const targetProfile = await api.getUser(targetId)
-      this.id = targetId
-      this.profile = targetProfile
+      const targetUser = await api.getUserByUsername(targetUsername).catch(() => null)
+      this.user = targetUser
       next()
     } catch (error) {
-      if (!(error instanceof ApiError)) throw error
-      const apiError: ApiError = error
-      const data: OtherClientErrorResponse = apiError.data
-      AppModule.addAlert({ type: 'error', message: data.message })
       next()
     }
     AppModule.setIsPageLoading(false)

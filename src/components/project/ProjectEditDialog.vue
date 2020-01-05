@@ -71,12 +71,9 @@
 import Vue from 'vue'
 import { Component, Prop, PropSync, Emit, Watch } from 'vue-property-decorator'
 import AppModule from '@/store/modules/app'
-import Api, { ApiError, BadRequestResponse, OtherClientErrorResponse } from '@/api/Api'
+import api, { BadRequestResponse, OtherClientErrorResponse } from '@/api/api'
 import ProjectPrivacy from '@/enums/ProjectPrivacy'
-import { apiErrorHandler } from '@/utils/util'
 import TagField from './TagField.vue'
-
-const api = Api.getInstance()
 
 interface Project {
   name: string,
@@ -131,7 +128,6 @@ export default class ProjectEditDialog extends Vue {
       this.$router.push('/')
       this.showingDialog = false
     } catch (error) {
-      apiErrorHandler(error)
     }
     this.loading = false
   }
@@ -145,7 +141,6 @@ export default class ProjectEditDialog extends Vue {
       this.showingDialog = false
       this.actionDone()
     } catch (error) {
-      apiErrorHandler(error)
     }
     this.loading = false
   }
@@ -166,7 +161,6 @@ export default class ProjectEditDialog extends Vue {
       this.initProjectModel()
       this.showingDialog = false
     } catch (error) {
-      apiErrorHandler(error)
     }
     this.loading = false
   }

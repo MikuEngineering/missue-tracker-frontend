@@ -31,7 +31,11 @@
         label="Comment"
       ></v-textarea>
       <v-card v-else class="pa-5">
-        <div v-text="content"></div>
+        <div
+          v-for="(line, i) in contentLines"
+          :key="`comment-content-line-${i}`"
+          v-text="line"
+        ></div>
       </v-card>
     </v-col>
   </v-row>
@@ -59,6 +63,10 @@ export default class IssueComment extends Vue {
 
   set content (value) {
     this.$emit('input', value)
+  }
+
+  get contentLines () {
+    return this.value.trim().split('\n').map(line => line.trim())
   }
 
   getGravatarUrl (email: string) {
