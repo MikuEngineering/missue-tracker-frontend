@@ -18,12 +18,14 @@ export interface OtherClientErrorResponse {
   message: string
 }
 
+const { BACKEND_HOST } = process.env
+
 class Api {
   public readonly httpClient: AxiosInstance
 
   constructor () {
     this.httpClient = axios.create({
-      baseURL: 'https://miku.deviltea.io/api',
+      baseURL: `${BACKEND_HOST}/api`,
       withCredentials: true
     })
 
