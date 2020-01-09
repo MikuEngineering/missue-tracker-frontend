@@ -45,12 +45,19 @@ class Api {
             }
           } else if (Math.floor(status / 100) === 4) {
             if (error.response.data && error.response.data.message) {
-              const data: OtherClientErrorResponse = error.response.data
-              const { message } = data
-              AppModule.addAlert({
-                type: 'error',
-                message
-              })
+              const url = (error.config.url || '').replace(error.config.baseURL || '', '')
+              const method = error.config.method
+              const isValidateSessionApi = status === 404 && method === 'get' && url === '/session'
+              const isLogoutApi = status === 401 && method === 'delete' && url === '/session'
+              if (isValidateSessionApi || isLogoutApi) {
+              } else {
+                const data: OtherClientErrorResponse = error.response.data
+                const { message } = data
+                AppModule.addAlert({
+                  type: 'error',
+                  message
+                })
+              }
             }
           } else if (Math.floor(status / 100) === 5) {
             AppModule.addAlert({
