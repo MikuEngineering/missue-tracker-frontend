@@ -59,7 +59,6 @@
           ></v-text-field>
 
           <v-text-field
-            v-if="!editedProfile.lineToken"
             v-model="editedProfile.lineToken"
             class="mb-2"
             label="Line Token"
@@ -177,7 +176,7 @@ export default class ProfileView extends Vue {
 
   get userAvatarUrl () {
     if (this.user === null) return ''
-    return getGravatarUrl(this.user.email)
+    return getGravatarUrl(this.user.email, 300)
   }
 
   async toggleEdit () {
@@ -193,6 +192,7 @@ export default class ProfileView extends Vue {
         await AppModule.afterLoggedIn(this.user.username)
         this.user.nickname = this.editedProfile.nickname
         this.user.email = this.editedProfile.email
+        this.user.lineToken = this.editedProfile.lineToken
         this.user.autobiography = this.editedProfile.autobiography
         this.isEditting = false
       } catch (error) {
