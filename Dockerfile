@@ -1,7 +1,7 @@
 FROM node:12.13.0-alpine
 
 ARG API_BASE_URL
-ARG FRONTEND_PUBLIC_PATH=/
+ARG FRONTEND_PUBLIC_PATH
 
 # install simple http server for serving static content
 RUN npm install -g http-server
@@ -24,5 +24,8 @@ RUN npm run build
 ENV API_BASE_URL=$API_BASE_URL
 ENV FRONTEND_PUBLIC_PATH=$FRONTEND_PUBLIC_PATH
 
+ADD https://github.com/ufoscout/docker-compose-wait/releases/download/2.6.0/wait /wait
+RUN chmod +x /wait
+
 EXPOSE 8080
-CMD [ "http-server", "dist" ]
+CMD /wait && http-server dist
