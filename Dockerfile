@@ -1,6 +1,6 @@
 FROM node:12.13.0-alpine
 
-ARG BACKEND_HOST
+ARG API_BASE_URL
 ARG FRONTEND_PUBLIC_PATH=/
 
 # install simple http server for serving static content
@@ -21,7 +21,7 @@ COPY . .
 # build app for production with minification
 RUN npm run build
 
-ENV BACKEND_HOST=$BACKEND_HOST
+ENV API_BASE_URL=$API_BASE_URL
 ENV FRONTEND_PUBLIC_PATH=$FRONTEND_PUBLIC_PATH
 
 EXPOSE 8080

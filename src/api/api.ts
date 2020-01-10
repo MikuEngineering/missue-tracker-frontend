@@ -18,14 +18,14 @@ export interface OtherClientErrorResponse {
   message: string
 }
 
-const { BACKEND_HOST } = process.env
+const { API_BASE_URL } = process.env
 
 class Api {
   public readonly httpClient: AxiosInstance
 
   constructor () {
     this.httpClient = axios.create({
-      baseURL: `${BACKEND_HOST}/api`,
+      baseURL: API_BASE_URL,
       withCredentials: true
     })
 

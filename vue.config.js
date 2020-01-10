@@ -5,7 +5,7 @@ module.exports = {
       let _base = args[0]['process.env']
       args[0]['process.env'] = {
         ..._base,
-        'BACKEND_HOST': JSON.stringify(process.env.BACKEND_HOST)
+        'API_BASE_URL': JSON.stringify(process.env.API_BASE_URL)
       }
       return args
     })
